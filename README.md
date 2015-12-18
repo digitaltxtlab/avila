@@ -1,8 +1,6 @@
 # avila
 Project funded by Prof. Armin Geertz (Study of Religion) on collected writings of Teresa of Ávila <br/>
-collaboators <br/>
-
-
+## collaboators <br/>
 Period  | Name
 ------------- | -------------
 2015 -  | Armin W. Geerz
