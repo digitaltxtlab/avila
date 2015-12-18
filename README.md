@@ -1,9 +1,10 @@
 # avila
 Project funded by Prof. Armin Geertz (Study of Religion) on collected writings of Teresa of Ávila <br/>
 collaboators <br/>
-Anne Buch (Dec 2015-) <br/>
 
-First Header  | Second Header
+
+Period  | Name
 ------------- | -------------
-Content Cell  | Content Cell
-Content Cell  | Content Cell
+2015 -  | Armin W. Geerz
+2015 -  | Kristoffer L. Nielbo
+2015 -  | Anne Buch
