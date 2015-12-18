@@ -1,6 +1,6 @@
-# avila
+# Mining Mystical Experience in Terese of Ávila
 Project funded by Prof. Armin Geertz (Study of Religion) on collected writings of Teresa of Ávila <br/>
-## collaboators <br/>
+## Collaboators <br/>
 Period  | Name
 ------------- | -------------
 2015 -  | Armin W. Geerz
