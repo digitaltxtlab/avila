@@ -5,4 +5,6 @@ Period  | Name
 ------------- | -------------
 2015 -  | Armin W. Geerz
 2015 -  | Kristoffer L. Nielbo
-2015 -  | Anne Buch
+2015    | Anne Buch
+2016 -  | Mathias Hoeg Boisen
+2016 -  | Anders Geil
