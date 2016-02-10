@@ -2,8 +2,8 @@
 **Armin, Anders, Mathias, Kristoffer**<br/>
 1. Project design<br/>
 2. Tasks
--*  Anders
--*  Mathias
--*  Armin
--*  Kristoffer
+-  Anders
+-  Mathias
+-  Armin
+-  Kristoffer
 
