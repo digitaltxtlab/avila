@@ -1,5 +1,6 @@
 library(magrittr)
 library(tm)
+library(plyr)
 
 
 # Load data
@@ -23,6 +24,4 @@ for (j in 2:14) {
         meta(corpus[[i]], tag=tags[j]) <- metadata[i,j]
     }
 }
-
-
 
