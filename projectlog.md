@@ -1,3 +1,3 @@
-## Meeting February 10
+### Meeting February 10
 (Armin, Anders, Mathias, Kristoffer)
 
