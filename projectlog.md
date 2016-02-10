@@ -2,8 +2,7 @@
 **Armin, Anders, Mathias, Kristoffer**<br/>
 1. Project design<br/>
 2. Tasks
--  Anders
--  Mathias
--  Armin
+-  Anders & Mathias: spatial and temporal pipelines; 
+-  Armin: hire; identification of internal and external events; keywords
 -  Kristoffer
 
