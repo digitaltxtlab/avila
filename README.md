@@ -5,6 +5,6 @@ Period  | Name | Email
 ------------- | ------------- | ------------- 
 2015 -  | Armin W. Geerz | awg@cas.au.dk 
 2015 -  | Kristoffer L. Nielbo | kln@cas.au.dk
-2015    | Anne Buch |
-2016 -  | Mathias Hoeg Boisen |
-2016 -  | Anders Geil |
+2015    | Anne Buch | boogie_1988_1@hotmail.com 
+2016 -  | Mathias Hoeg Boisen | m-boisen@hotmail.com
+2016 -  | Anders Geil | anders.geil@gmail.com
