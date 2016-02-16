@@ -53,4 +53,9 @@ ggplot(metadata, aes(as.factor(afsenderby))) +
     ylab("Number of texts") +
     coord_flip()
 
+ggplot(metadata, aes(as.factor(metadata[,3]))) +
+    geom_bar() +
+    xlab("") +
+    ylab("Number of texts") +
+    coord_flip()
 
