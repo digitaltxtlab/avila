@@ -2,6 +2,7 @@ library(magrittr)
 library(tm)
 library(plyr)
 library(ggplot2)
+library(leaflet)
 library(quanteda)
 
 # Load data
@@ -27,9 +28,7 @@ for (j in 2:14) {
 }
 
 
-### Overview
-
-# Histogram
+# Overview plots
 ggplot(metadata, aes(årstal)) +
     geom_histogram(binwidth=1) +
     xlab("") +
@@ -39,23 +38,28 @@ ggplot(metadata, aes(as.factor(modtager))) +  # clean up modtager-list?
     geom_bar() +
     xlab("") +
     ylab("Number of texts") +
+    ggtitle("Receiver") +
     coord_flip()
 
 ggplot(metadata, aes(as.factor(modtagerby))) +
     geom_bar() +
     xlab("") +
     ylab("Number of texts") +
+    ggtitle("Receiver city") +
     coord_flip()
 
 ggplot(metadata, aes(as.factor(afsenderby))) +
     geom_bar() +
     xlab("") +
     ylab("Number of texts") +
+    ggtitle("Sender city") +
     coord_flip()
 
 ggplot(metadata, aes(as.factor(metadata[,3]))) +
     geom_bar() +
     xlab("") +
     ylab("Number of texts") +
+    ggtitle("Type of text") +
     coord_flip()
 
+# Maps
