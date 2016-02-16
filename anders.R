@@ -1,12 +1,8 @@
 library(magrittr)
 library(tm)
-<<<<<<< HEAD
 library(plyr)
 library(ggplot2)
 library(quanteda)
-=======
-
->>>>>>> 9ac40994ca013ecacf44fbe01b853cb39526ea3e
 
 # Load data
 src <- "~/Google Drev/tavila/documents"
@@ -19,14 +15,8 @@ corpus[[3]] <- NULL # note: letter 100 = rapidminer-trash!
 # Metadata
 meta_src <- "~/Google Drev/tavila/metadata.csv"
 metadata <- read.csv(meta_src)
-<<<<<<< HEAD
 
 metadata$dokument.nr <- as.character(metadata$dokument.nr) # tm arranges by chars
-=======
-#install.packages("plyr")
-library(plyr)
-metadata$dokument.nr <- as.character(metadata$dokument.nr) # tm's rækkefølge er efter chars
->>>>>>> 9ac40994ca013ecacf44fbe01b853cb39526ea3e
 metadata <- arrange(metadata, dokument.nr)
 
 for (j in 2:14) {
@@ -34,7 +24,6 @@ for (j in 2:14) {
     for (i in 1:690) {
         meta(corpus[[i]], tag=tags[j]) <- metadata[i,j]
     }
-<<<<<<< HEAD
 }
 
 
@@ -64,6 +53,4 @@ ggplot(metadata, aes(as.factor(afsenderby))) +
     ylab("Number of texts") +
     coord_flip()
 
-=======
-}
->>>>>>> 9ac40994ca013ecacf44fbe01b853cb39526ea3e
+
