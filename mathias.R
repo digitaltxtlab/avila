@@ -43,3 +43,4 @@ for (j in 2:14) {
   }
 } #Loop der indlæser meta data Anne
 library(ggplot2)
+install.packages()
