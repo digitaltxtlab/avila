@@ -3,15 +3,13 @@ library(tm)
 library(plyr)
 library(ggplot2)
 library(scales)
-library(leaflet)
-library(quanteda)
 
 # Load data
 src <- "~/Google Drev/tavila/documents"
 corpus <- Corpus(DirSource(src, encoding="latin1"), 
                  readerControl=list(Language="PlainTextDocument"))
 
-corpus[[3]] <- NULL # note: letter 100 = rapidminer-trash!
+# corpus[[3]] <- NULL # note: letter 100 = rapidminer-trash!
 
 
 # Metadata
@@ -85,3 +83,5 @@ gg_yearword <- ggplot(yearword, aes(x=year, y=words)) +
     ylab("Words") +
     scale_x_date(labels = date_format("%Y"),
                  breaks = date_breaks("3 year"))
+
+
