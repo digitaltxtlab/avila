@@ -105,7 +105,6 @@ landby[c(1,22,25,39),c(2,3)] <- NA
 metadata <- merge(metadata, byland, by = 'afsland')
 metadata <- merge(metadata, landby, by = 'modland')
 
-
 # map projection
 geo <- list(
   resolution = 50,
@@ -137,17 +136,19 @@ later <-  subset(metadata, årstal > 1571)
 metadata$test <- NA
 metadata$test <- cbind(paste0(metadata$modtagerby, " ", metadata$afsenderby))
 test <- count(metadata$test)
-test[c(178),c(1,2)] <- NA
+test[c(164),c(1,2)] <- NA
 test <- rename(test, c("x" = "test"))
-test <- merge(metadata, test, by = "test")
+test <- merge(test, metadata[,c(22:26)], by = "test")
+test <- unique(test)
+
 p <- plotly(username = "bojje", key= "yvlnbgl4uh")
 
-res <- plot_ly(na.omit(metadata), lon = lonmod, lat = latmod, type = 'scattergeo',
+res <- plot_ly(na.omit(test), lon = lonmod, lat = latmod, type = 'scattergeo',
              locationmode = 'ESP', marker = list(size = 1, color = 'red'),
              inherit = FALSE) %>%
   add_trace(lon = list(lonafs, lonmod), lat = list(latafs, latmod),
-          group = dokument.nr,
-            mode = 'lines', line = list(width = metadata$freq, color = 'red'),
+          group = test,
+            mode = 'lines', line = list(width = 5, color = 'red'),
            type = 'scattergeo', locationmode = 'ESP',
             text = årstal, data = na.omit(metadata)
           ) %>%
