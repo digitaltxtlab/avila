@@ -71,12 +71,20 @@ metadata$landmod[436] <- "Portugal"
 metadata$landmod[440] <- "Italy"
 #Peru er i Peru
 metadata$landmod[379] <- ""
+
 metadata$afsland <- NA
 metadata$afsland[1:468] <- cbind(paste0(metadata$afsenderby[1:468], " ", metadata$land[1:468]))
 metadata$afsland[469:690] <- NA
 metadata$modland <- NA
+#Alcala de henares (antages det udfra obs. 268)
+#metadata[c(377:371, 328, 324, 320, 317:315, 311, 307, 303, 302, 297, 291, 290, 289, 288, 268, 247:244, 242, 239, 238, 233, 216),c(9)] <- "Madrid" 
+metadata$modtagerby[metadata$modtagerby == "Alcalá"] <- "Madrid" 
+metadata[c(372, 315, 268, 216),c(9)] <- "Madrid"
+#Alba de Tormes (antages det udfra obs. 22 og 220)
+metadata$modtagerby[metadata$modtagerby == "Alba"] <- "Alba de Tormes"
+#Duchess of Alba omkodes til Alba de Tormes
+metadata$modtagerby[c(278)] <- "Alba de Tormes"
 metadata$modland[1:468] <- cbind(paste0(metadata$modtagerby[1:468], " ", metadata$landmod[1:468]))
-metadata$modland[469:690] <- NA
 
 #geocode sender afsender og modtager for at slå lon og lat koordinater op 
 afskoor <- geocode(unique(metadata$afsland[1:468]))
@@ -85,25 +93,19 @@ byland <- cbind("afsland"=unique(metadata$afsland[1:468]), afskoor)
 landby <- cbind("modland"=unique(metadata$modland[1:468]), modkoor)
 #laver en NA variable så jeg kan merge tilbage ind i metadata
 byland[c(19), c(1,2,3)] <- NA
-landby[c(65), c(1,2,3)] <- NA
+landby[c(59), c(1,2,3)] <- NA
 #navngiver lon og lat ifht afs og mod så jeg kan merge
 byland <- rename(byland, c("lon"="lonafs", "lat"="latafs"))
 landby <- rename(landby, c("lon"="lonmod", "lat"="latmod"))
 #sætter usikkre observationer = NA for afsender
 byland[c(12,13,18),c(2,3)] <- NA
-#sætter usikkre observationer = NA for modtager (NA, Medina, Gotarrendura(der er nok flere, f.eks. alba spain))
-landby[c(4, 23,26),c(2,3)] <- NA
+#sætter usikkre observationer = NA for modtager (NA, Medina, Gotarrendura, Granada)
+landby[c(1,22,25,39),c(2,3)] <- NA
 #Folder koordinater tilbage ind i datasættet (måske unødvendigt...)
 metadata <- merge(metadata, byland, by = 'afsland')
 metadata <- merge(metadata, landby, by = 'modland')
 
-#Forsøger at lave et plot
-map("world")
-set.seed(10)
 
-points(x = metadata$lonafs, y = metadata$latafs, col = "red")
-lines(x = metadata$lonmod, y = metadata$latmod, col = "blue")
-#det var grimt, igen: 
 # map projection
 geo <- list(
   resolution = 50,
@@ -131,23 +133,34 @@ geo <- list(
 early1 <- subset(metadata, årstal < 1571)
 later <-  subset(metadata, årstal > 1571)
 
-plot_ly(na.omit(metadata), lon = lonmod, lat = latmod, type = 'scattergeo',
-             locationmode = 'ESP', marker = list(size = 10, color = 'red'),
+#laver en variable der tæller ens observationer
+metadata$test <- NA
+metadata$test <- cbind(paste0(metadata$modtagerby, " ", metadata$afsenderby))
+test <- count(metadata$test)
+test[c(178),c(1,2)] <- NA
+test <- rename(test, c("x" = "test"))
+test <- merge(metadata, test, by = "test")
+p <- plotly(username = "bojje", key= "yvlnbgl4uh")
+
+res <- plot_ly(na.omit(metadata), lon = lonmod, lat = latmod, type = 'scattergeo',
+             locationmode = 'ESP', marker = list(size = 1, color = 'red'),
              inherit = FALSE) %>%
-  #add_trace(lon = list(lonafs, lonmod), lat = list(latafs, latmod),
-   #         group = dokument.nr,
-    #        mode = 'lines', line = list(width = 1, color = 'red'),
-     #       type = 'scattergeo', locationmode = 'ESP',
-      #      text = årstal, data = na.omit(metadata)
-       #     ) %>%
+  add_trace(lon = list(lonafs, lonmod), lat = list(latafs, latmod),
+          group = dokument.nr,
+            mode = 'lines', line = list(width = metadata$freq, color = 'red'),
+           type = 'scattergeo', locationmode = 'ESP',
+            text = årstal, data = na.omit(metadata)
+          ) %>%
   layout(title = 'Avilia',
          geo = geo,
          autosize = F,
-         width = 1100,
-         height = 900,
+         width = 2400,
+         height = 1800,
          hovermode = F
          )
-#skal opdele data i subplots... skal finde en anden baggrund. 
+
+plotly_POST(res, filename = "r-docs/avilia", world_readable=TRUE)
+
 #Dropper variable og data frames som ikke længere er nødvendige.
 #drops <- c("afsland", "modland", "landmod", "land")
 #metadata <- metadata[,!(names(metadata) %in% drops)]
