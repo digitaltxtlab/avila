@@ -8,4 +8,6 @@
 -  
 ## March 10: meeting
 **Anders, Mathias, Kristoffer**<br/>
-
+Tasks
+-  Anders & Mathias: email on location and phasing 
+-  Kristoffer: LIWC & length normalization
