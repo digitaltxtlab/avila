@@ -71,7 +71,19 @@ metadata$landmod[436] <- "Portugal"
 metadata$landmod[440] <- "Italy"
 #Peru er i Peru
 metadata$landmod[379] <- ""
-
+#Almodôvar er i Portugal
+metadata$landmod[117] <- "Portugal"
+metadata$landmod[118] <- "Portugal"
+metadata$landmod[119] <- "Portugal"
+metadata$landmod[121] <- "Portugal"
+#Evora er i Portugal
+metadata$landmod[226] <- "Portugal"
+metadata$landmod[305] <- "Portugal"
+#Quito er i Ecuador (måske)
+metadata$landmod[2] <- ""
+metadata$landmod[24] <- ""
+metadata$landmod[363] <- "Equador"
+metadata$landmod[427] <- "Equador"
 metadata$afsland <- NA
 metadata$afsland[1:468] <- cbind(paste0(metadata$afsenderby[1:468], " ", metadata$land[1:468]))
 metadata$afsland[469:690] <- NA
@@ -99,8 +111,8 @@ byland <- rename(byland, c("lon"="lonafs", "lat"="latafs"))
 landby <- rename(landby, c("lon"="lonmod", "lat"="latmod"))
 #sætter usikkre observationer = NA for afsender
 byland[c(12,13,18),c(2,3)] <- NA
-#sætter usikkre observationer = NA for modtager (NA, Medina, Gotarrendura, Granada)
-landby[c(1,22,25,39),c(2,3)] <- NA
+#sætter usikkre observationer = NA for modtager (NA, Medina, Granada)
+landby[c(22,25,39),c(2,3)] <- NA
 #Folder koordinater tilbage ind i datasættet (måske unødvendigt...)
 metadata <- merge(metadata, byland, by = 'afsland')
 metadata <- merge(metadata, landby, by = 'modland')
@@ -144,20 +156,20 @@ test <- unique(test)
 p <- plotly(username = "bojje", key= "yvlnbgl4uh")
 
 res <- plot_ly(na.omit(test), lon = lonmod, lat = latmod, type = 'scattergeo',
-             locationmode = 'ESP', marker = list(size = 1, color = 'red'),
+             locationmode = 'ESP', marker = list(size = 1, color = 'blue'),
              inherit = FALSE) %>%
   add_trace(lon = list(lonafs, lonmod), lat = list(latafs, latmod),
-          group = test,
-            mode = 'lines', line = list(width = 5, color = 'red'),
-           type = 'scattergeo', locationmode = 'ESP',
+            group = test,
+            mode = 'lines', line = list(width = 1, color = 'blue'),
+            type = 'scattergeo', locationmode = 'ESP',
             text = årstal, data = na.omit(metadata)
-          ) %>%
+  ) %>%
   layout(title = 'Avilia',
          geo = geo,
-         autosize = F,
-         width = 2400,
-         height = 1800,
-         hovermode = F
+         autosize = T,
+       #  width = 2400,
+        # height = 1800,
+         hovermode = T
          )
 
 plotly_POST(res, filename = "r-docs/avilia", world_readable=TRUE)
