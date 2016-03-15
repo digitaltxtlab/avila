@@ -20,6 +20,11 @@ metadata <- arrange(metadata, dokument.nr)
 names(metadata) <- c("Number", "Name", "Format", "Year", "Month", "Day", "CitySend", 
                      "Receiver", "CityReceive", "Incomplete", "NChapters", "Book", "Notes", 
                      "Translator", "X", "Y", "Legend")
+
+# cleaning
+metadata$Format <- revalue(metadata$Format, c("sol"="soliloquy", "tes"="testimony"))
+
+# assigning metadata to corpus
 for (i in 3:14) {
     docvars(corp, names(metadata)[i]) <- metadata[,i]
 }
@@ -76,6 +81,13 @@ gg_textdict_facet <- ggplot(textdict, aes(x=Number, y=value)) + # facet
     facet_wrap(~ variable) +
     labs(x="Text number", y="Score")
 
+ggplot(textdict, aes(x=Number, y=value, color=variable)) + # facet + color
+    geom_bar(stat="identity") +
+#    geom_line() +
+    facet_wrap(~ variable) +
+    labs(x="Text number", y="Score") +
+    theme(legend.position="none")
+
 
 # by year (aggregated)
 yeardict <- metadata[,c("Year", "Barrier", "Penetration")] %>% 
@@ -91,4 +103,10 @@ gg_yeardict_facet <- ggplot(yeardict, aes(x=Year, y=value)) + # facet
     geom_line() +
     facet_wrap(~ variable) +
     labs(x="Year", y="Score")
+
+ggplot(yeardict, aes(x=Year, y=value, fill=variable)) + # color + facet
+    geom_bar(stat="identity") +
+    facet_wrap(~ variable) +
+    labs(x="Year", y="Score") +
+    theme(legend.position="none")
 
