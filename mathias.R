@@ -59,7 +59,7 @@ for (j in 2:14) {
 #translaterere stednavne overtil koordinater
 #laver en variabel der knytter land til by (det antages at alle steder er i spanien)
 metadata$land <- NA
-metadata[1:468, 18] <- "Spain"
+metadata[1:551, 18] <- "Spain"
 #usikkerhed om følgende lokationer: lisbon(portugal), cremona(italien?), Quito (Ecuador)
 metadata$landmod <- NA
 metadata$landmod[1:468] <- "Spain"
@@ -85,8 +85,8 @@ metadata$landmod[24] <- ""
 metadata$landmod[363] <- "Equador"
 metadata$landmod[427] <- "Equador"
 metadata$afsland <- NA
-metadata$afsland[1:468] <- cbind(paste0(metadata$afsenderby[1:468], " ", metadata$land[1:468]))
-metadata$afsland[469:690] <- NA
+metadata$afsland[1:551] <- cbind(paste0(metadata$afsenderby[1:551], " ", metadata$land[1:551]))
+metadata$afsland[552:690] <- NA
 metadata$modland <- NA
 #Alcala de henares (antages det udfra obs. 268)
 #metadata[c(377:371, 328, 324, 320, 317:315, 311, 307, 303, 302, 297, 291, 290, 289, 288, 268, 247:244, 242, 239, 238, 233, 216),c(9)] <- "Madrid" 
@@ -94,14 +94,16 @@ metadata$modtagerby[metadata$modtagerby == "Alcalá"] <- "Madrid"
 metadata[c(372, 315, 268, 216),c(9)] <- "Madrid"
 #Alba de Tormes (antages det udfra obs. 22 og 220)
 metadata$modtagerby[metadata$modtagerby == "Alba"] <- "Alba de Tormes"
+#Avila = Avila?
+metadata$modtagerby[metadata$afsenderby == "Avila?"] <- "Avila"
 #Duchess of Alba omkodes til Alba de Tormes
 metadata$modtagerby[c(278)] <- "Alba de Tormes"
 metadata$modland[1:468] <- cbind(paste0(metadata$modtagerby[1:468], " ", metadata$landmod[1:468]))
 
 #geocode sender afsender og modtager for at slå lon og lat koordinater op 
-afskoor <- geocode(unique(metadata$afsland[1:468]))
+afskoor <- geocode(unique(metadata$afsland[1:551]))
 modkoor <- geocode(unique(metadata$modland[1:468]))
-byland <- cbind("afsland"=unique(metadata$afsland[1:468]), afskoor)
+byland <- cbind("afsland"=unique(metadata$afsland[1:551]), afskoor)
 landby <- cbind("modland"=unique(metadata$modland[1:468]), modkoor)
 #laver en NA variable så jeg kan merge tilbage ind i metadata
 byland[c(19), c(1,2,3)] <- NA
@@ -152,29 +154,47 @@ test[c(164),c(1,2)] <- NA
 test <- rename(test, c("x" = "test"))
 test <- merge(test, metadata[,c(22:26)], by = "test")
 test <- unique(test)
+#laver cirkler
+#tæller observationer af afsenderby
+testmod <- count(metadata$afsenderby)
+metadata$test1 <- NA
+metadata$test1 <- cbind(paste0(metadata$afsenderby))
+testmod[c(23),c(1,2)] <- NA
+testmod <- rename(testmod, c("x" = "test1"))
+testmod <- merge(testmod, metadata[,c(22:23, 27)], by = "test1")
+testmod <- unique(testmod)
+
+#Laver kort med plotly
 
 p <- plotly(username = "bojje", key= "yvlnbgl4uh")
 
-res <- plot_ly(na.omit(test), lon = lonmod, lat = latmod, type = 'scattergeo',
-             locationmode = 'ESP', marker = list(size = 1, color = 'blue'),
-             inherit = FALSE) %>%
-  add_trace(lon = list(lonafs, lonmod), lat = list(latafs, latmod),
+res <- plot_ly(na.omit(testmod), lon = lonafs, lat = latafs,
+               marker = list(size = sqrt(testmod$freq)+7), color = 'red', type = 'scattergeo', locationmode = 'ESP',
+               inherit = FALSE, text = test1
+               ) %>%
+  add_trace(na.omit(test), lon = list(lonafs, lonmod), lat = list(latafs, latmod),
             group = test,
             mode = 'lines', line = list(width = 1, color = 'blue'),
             type = 'scattergeo', locationmode = 'ESP',
-            text = årstal, data = na.omit(metadata)
+            text = metadata$dokument.nr, data = na.omit(metadata)
   ) %>%
+#  add_trace(na.omit(testmod), lon = lonafs, lat = latafs,
+ #           marker = list(size = testmod$freq/15), color = 'red', type = 'scattergeo', locationmode = 'ESP',
+  #          inherit = FALSE
+  #) %>% 
   layout(title = 'Avilia',
          geo = geo,
          autosize = T,
        #  width = 2400,
         # height = 1800,
-         hovermode = T
+         hovermode = T,
+       showlegend = FALSE
          )
 
 plotly_POST(res, filename = "r-docs/avilia", world_readable=TRUE)
 
 #Dropper variable og data frames som ikke længere er nødvendige.
 #drops <- c("afsland", "modland", "landmod", "land")
+#drops <- c("test")
 #metadata <- metadata[,!(names(metadata) %in% drops)]
 #rm(byland, modkoor, afskoor, landby)
