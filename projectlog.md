@@ -5,4 +5,9 @@
 -  Anders & Mathias: spatial and temporal pipelines; 
 -  Armin: hire; identification of internal and external events; keywords
 -  Kristoffer
-
+-  
+## March 10: meeting
+**Anders, Mathias, Kristoffer**<br/>
+Tasks
+-  Anders & Mathias: email on location & phasing; figures for Armin 
+-  Kristoffer: LIWC & length normalization
