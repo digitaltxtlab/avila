@@ -35,7 +35,7 @@ library(maps)
 #library(ggmap)
 ######### Preamble end ##########
 ### Load Data
-dd <- "~/Dropbox/tavilia/Data/documents"
+dd <- "~/Dropbox/tavilia/documents"
 #Corpus
 avilia  <- Corpus(DirSource(dd, encoding = "latin1"), readerControl = list(language="PlainTextDocument"))
 names(avilia) <- gsub("\\..*","",names(avilia))
@@ -109,7 +109,7 @@ metadata$modland[1:468] <- cbind(paste0(metadata$modtagerby[1:468], " ", metadat
 afskoor <- geocode(unique(metadata$afsland[1:551]))
 modkoor <- geocode(unique(metadata$modland[1:468]))
 metadata$modtagerby <- gsub("^\\s+", "", metadata$modtagerby) %>%  # remove leading whitespace
-  gsub("\\s+$", "", .)  # remove trailing whitespace
+gsub("\\s+$", "", .)  # remove trailing whitespace
 byland <- cbind("afsland"=unique(metadata$afsland[1:551]), afskoor)
 landby <- cbind("modland"=unique(metadata$modland[1:468]), modkoor)
 #laver en NA variable så jeg kan merge tilbage ind i metadata
@@ -120,7 +120,7 @@ byland <- rename(byland, c("lon"="lonafs", "lat"="latafs"))
 landby <- rename(landby, c("lon"="lonmod", "lat"="latmod"))
 #sætter usikkre observationer = NA for afsender
 byland[c(12,13,18),c(2,3)] <- NA
-#sætter usikkre observationer = NA for modtager (NA, Medina, Granada)
+#sætter usikkre observationer = NA for modtager (NA, Medina, cremona)
 landby[c(22,25,39),c(2,3)] <- NA
 #Folder koordinater tilbage ind i datasættet (måske unødvendigt...)
 metadata <- merge(metadata, byland, by = 'afsland')
@@ -150,8 +150,7 @@ geo <- list(
   )
 )
 
-early1 <- subset(metadata, årstal < 1571)
-later <-  subset(metadata, årstal > 1571)
+
 
 #laver en variable der tæller ens observationer
 metadata$test <- NA
@@ -210,7 +209,12 @@ res <- plot_ly(na.omit(testafs), lon = lonafs, lat = latafs,
        showlegend = FALSE
          )
 
-plotly_POST(res, filename = "r-docs/avilia", world_readable=TRUE)
+  
+#plotly_POST(res, filename = "r-docs/avilia", world_readable=TRUE)
+
+#Laver netværks graf: 
+  
+
 #burgo de osma virker ikke, skal manuelt tilføje koordinater
 #Dropper variable og data frames som ikke længere er nødvendige.
 #drops <- c("afsland", "modland", "landmod", "land")
