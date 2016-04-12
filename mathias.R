@@ -13,7 +13,7 @@ setwd(wd)
 #install.packages("reshape2", dependencies = TRUE)
 #install.packages("ggplot2", dependencies = TRUE)
 #install.packages("ggmap", dependencies = TRUE)
-#install.packages('igraph')
+#install.packages('igraph', dependencies = TRUE)
 #install.packages('geosphere', dependencies = TRUE)
 #install.packages("devtools", dependencies = TRUE)
 #install.packages("plotly", dependencies = TRUE)
@@ -24,6 +24,7 @@ library(NLP)
 library(tm)
 library(ggmap)
 library(plotly)
+library(igrap)
 library(geosphere)
 library(plyr)
 library(maps)
@@ -152,9 +153,9 @@ geo <- list(
 
 
 
-#laver en variable der tæller ens observationer
+#laver en variable der tæller ens observationer (gammel kode)
 metadata$test <- NA
-metadata$test <- cbind(paste0(metadata$modtagerby, " ", metadata$afsenderby))
+metadata$test <- cbind(paste0(metadata$afsenderby, " ", metadata$modtagerby))
 test <- count(metadata$test)
 test[c(164),c(1,2)] <- NA
 test <- rename(test, c("x" = "test"))
@@ -213,7 +214,26 @@ res <- plot_ly(na.omit(testafs), lon = lonafs, lat = latafs,
 #plotly_POST(res, filename = "r-docs/avilia", world_readable=TRUE)
 
 #Laver netværks graf: 
-  
+metadata$test1[metadata$test1 == "NA"] <- NA
+metadata$test2[metadata$test2 == "NA"] <- NA
+
+g <- graph.data.frame(as.matrix(na.omit(metadata[,c(27,28)])),directed=TRUE)
+dda <- subset(na.omit(metadata), årstal < 1570)
+netvaerk <- na.omit(dda[,c(27,28)])
+#netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
+plot(g, edge.width=netvaerk$freq)
+
+
+
+#Arcdiagram
+#install.packages("devtools", dependencies = TRUE)
+library(devtools)
+#install_github('arcdiagram', username = 'gastonstat')
+library(arcdiagram)
+arcplot(as.matrix(netvaerk[,c(1,2)]), sorted = TRUE, decreasing = FALSE)
+#To do: find noget retning eller afsender/modtager på det; måske evt med frekvens nedenunder. 
+#laver måske en tidlig dimension
 
 #burgo de osma virker ikke, skal manuelt tilføje koordinater
 #Dropper variable og data frames som ikke længere er nødvendige.
