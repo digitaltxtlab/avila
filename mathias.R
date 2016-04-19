@@ -214,28 +214,35 @@ res <- plot_ly(na.omit(testafs), lon = lonafs, lat = latafs,
 #plotly_POST(res, filename = "r-docs/avilia", world_readable=TRUE)
 
 #Laver netværks graf: 
+library(igraph)
 metadata$test1[metadata$test1 == "NA"] <- NA
 metadata$test2[metadata$test2 == "NA"] <- NA
 
 g <- graph.data.frame(as.matrix(na.omit(metadata[,c(27,28)])),directed=TRUE)
-dda <- subset(na.omit(metadata), årstal < 1570)
+dda <- subset(na.omit(metadata), årstal < 1580)
 netvaerk <- na.omit(dda[,c(27,28)])
+netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
 #netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
 g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
-plot(g, edge.width=netvaerk$freq)
+E(g)$arrow.width <- .3
+set.seed(50)
+layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
+plot(g, edge.width=netvaerk$freq*0.2, vertex.size=1, vertex.shape = "circle", layout = layout)
+
+#install.packages("qgraph", dependencies = TRUE)
+library("qgraph")
+qgraph(na.omit(netvaerk[,c(1,2)])), esize = 5, gray = TRUE)
 
 
-
-#Arcdiagram
+#Arcdiagram <3<3<43
 #install.packages("devtools", dependencies = TRUE)
 library(devtools)
 #install_github('arcdiagram', username = 'gastonstat')
 library(arcdiagram)
 arcplot(as.matrix(netvaerk[,c(1,2)]), sorted = TRUE, decreasing = FALSE)
 #To do: find noget retning eller afsender/modtager på det; måske evt med frekvens nedenunder. 
-#laver måske en tidlig dimension
+#laver måske en tidslig dimension
 
-#burgo de osma virker ikke, skal manuelt tilføje koordinater
 #Dropper variable og data frames som ikke længere er nødvendige.
 #drops <- c("afsland", "modland", "landmod", "land")
 #drops <- c("test")
