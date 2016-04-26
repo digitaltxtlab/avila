@@ -218,8 +218,9 @@ library(igraph)
 metadata$test1[metadata$test1 == "NA"] <- NA
 metadata$test2[metadata$test2 == "NA"] <- NA
 
-g <- graph.data.frame(as.matrix(na.omit(metadata[,c(27,28)])),directed=TRUE)
-dda <- subset(na.omit(metadata), årstal < 1580)
+#g <- graph.data.frame(as.matrix(na.omit(metadata[,c(27,28)])),directed=TRUE)
+#### 1570
+dda <- subset(na.omit(metadata), årstal <= 1567)#  & årstal < 1580 )
 netvaerk <- na.omit(dda[,c(27,28)])
 netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
 #netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
@@ -227,14 +228,57 @@ g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
 E(g)$arrow.width <- .3
 set.seed(50)
 layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
+plot(g, edge.width=netvaerk$freq*2, vertex.size=1, vertex.shape = "circle", layout = layout)
+
+#### 1570
+dda <- subset(na.omit(metadata), årstal %in% 1568:1570) 
+netvaerk <- na.omit(dda[,c(27,28)])
+netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+#netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
+E(g)$arrow.width <- .3
+set.seed(50)
+layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
+plot(g, edge.width=netvaerk$freq*2, vertex.size=1, vertex.shape = "circle", layout = layout)
+
+#### 1570-1575
+dda <- subset(na.omit(metadata), årstal %in% 1571:1575) 
+netvaerk <- na.omit(dda[,c(27,28)])
+netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+#netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
+E(g)$arrow.width <- .3
+set.seed(2)
+layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
+plot(g, edge.width=netvaerk$freq*2, vertex.size=1, vertex.shape = "circle", layout = layout)
+
+#### 1575-1577
+dda <- subset(na.omit(metadata), årstal %in% 1576:1577) 
+netvaerk <- na.omit(dda[,c(27,28)])
+netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+#netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
+E(g)$arrow.width <- 1
+set.seed(10)
+layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
+plot(g, edge.width=netvaerk$freq*0.2, vertex.size=1, vertex.shape = "circle", layout = layout)
+
+#### 1577-????
+dda <- subset(na.omit(metadata), årstal %in% 1578:1595) 
+netvaerk <- na.omit(dda[,c(27,28)])
+netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+#netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
+E(g)$arrow.width <- 1
+set.seed(14)
+layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
 plot(g, edge.width=netvaerk$freq*0.2, vertex.size=1, vertex.shape = "circle", layout = layout)
 
 #install.packages("qgraph", dependencies = TRUE)
-library("qgraph")
-qgraph(na.omit(netvaerk[,c(1,2)])), esize = 5, gray = TRUE)
+#library("qgraph")
+#qgraph(na.omit(netvaerk[,c(1,2)])), esize = 5, gray = TRUE)
 
-
-#Arcdiagram <3<3<43
+#Arcdiagram
 #install.packages("devtools", dependencies = TRUE)
 library(devtools)
 #install_github('arcdiagram', username = 'gastonstat')
