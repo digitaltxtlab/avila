@@ -2,7 +2,7 @@
 #clear
 rm(list = ls())
 #workingdirect
-wd = '~/Dropbox/tavilia'
+wd = '~/Google Drev/tavila'
 setwd(wd)
 # install af pakker
 #install.packages("NLP", dependencies = TRUE)
@@ -24,7 +24,7 @@ library(NLP)
 library(tm)
 library(ggmap)
 library(plotly)
-library(igrap)
+library(igraph)
 library(geosphere)
 library(plyr)
 library(maps)
@@ -36,7 +36,7 @@ library(maps)
 #library(ggmap)
 ######### Preamble end ##########
 ### Load Data
-dd <- "~/Dropbox/tavilia/documents"
+dd <- "~/Google Drev/tavila/documents"
 #Corpus
 avilia  <- Corpus(DirSource(dd, encoding = "latin1"), readerControl = list(language="PlainTextDocument"))
 names(avilia) <- gsub("\\..*","",names(avilia))
@@ -45,19 +45,20 @@ filenum <- gsub("\\D*","",names(avilia))
 fileclass <- gsub("\\d+_","",names(avilia))
 fileclass[fileclass == "lette"] = "letter" # correct for spelling error
 #Data tabel: 
-metadata <- read.csv(("~/Dropbox/tavilia/Meta Data/metadata.csv"), colClasses=c('character')) #fra num til char grundet sortering
+metadata <- read.csv(("~/Google Drev/tavila/metadata.csv"), colClasses=c('character')) #fra num til char grundet sortering
 
 for (j in 2:14) {
-  tags <- names(metadata)
-  for (i in 1:690) {
-    meta(avilia[[i]], tag=tags[j]) <- metadata[i,j]
-  }
+    tags <- names(metadata)
+    for (i in 1:690) {
+        meta(avilia[[i]], tag=tags[j]) <- metadata[i,j]
+    }
 } #Loop der indlæser meta data
 
 metadata[619,7] <- NA # "" <- NA
-metadata$modtagerby <- revalue(metadata$modtagerby, c("Madrid?" = NA,
+metadata$modtagerby <- revalue(metadata$modtagerby, c("Madrid?" = "Madrid",
                                                       "Quito" = "Quito (Ecuador)",
-                                                      "La Serna (Avila)" = "Avila"))
+                                                      "La Serna (Avila)" = "Avila",
+                                                      "Medina" = "Medina del Campo"))
 
 #laver en variabel der knytter land til by (det antages at alle steder er i spanien)
 metadata$land <- NA
@@ -92,7 +93,7 @@ metadata$afsland[552:690] <- NA
 metadata$modland <- NA
 #Alcala de henares (antages det udfra obs. 268)
 #metadata[c(377:371, 328, 324, 320, 317:315, 311, 307, 303, 302, 297, 291, 290, 289, 288, 268, 247:244, 242, 239, 238, 233, 216),c(9)] <- "Madrid" 
-metadata$modtagerby[metadata$modtagerby == "Alcalá"] <- "Madrid" 
+#metadata$modtagerby[metadata$modtagerby == "Alcalá"] <- "Madrid" 
 metadata[c(372, 315, 268, 216),c(9)] <- "Madrid"
 #Alba de Tormes (antages det udfra obs. 22 og 220)
 metadata$modtagerby[metadata$modtagerby == "Alba"] <- "Alba de Tormes"
@@ -110,7 +111,7 @@ metadata$modland[1:468] <- cbind(paste0(metadata$modtagerby[1:468], " ", metadat
 afskoor <- geocode(unique(metadata$afsland[1:551]))
 modkoor <- geocode(unique(metadata$modland[1:468]))
 metadata$modtagerby <- gsub("^\\s+", "", metadata$modtagerby) %>%  # remove leading whitespace
-gsub("\\s+$", "", .)  # remove trailing whitespace
+    gsub("\\s+$", "", .)  # remove trailing whitespace
 byland <- cbind("afsland"=unique(metadata$afsland[1:551]), afskoor)
 landby <- cbind("modland"=unique(metadata$modland[1:468]), modkoor)
 #laver en NA variable så jeg kan merge tilbage ind i metadata
@@ -129,26 +130,26 @@ metadata <- merge(metadata, landby, by = 'modland')
 
 # map projection
 geo <- list(
-  resolution = 50,
-  showland = TRUE,
-  showlakes = TRUE,
-  landcolor = toRGB("grey80"),
-  countrycolor = toRGB("grey80"),
-  lakecolor = toRGB("white"),
-  projection = list(type = "equirectangular"),
-  coastlinewidth = 2,
-  lataxis = list(
-    range = c(35, 45),
-    showgrid = TRUE,
-    tickmode = "linear",
-    dtick = 10
-  ),
-  lonaxis = list(
-    range = c(-10, 2),
-    showgrid = TRUE,
-    tickmode = "linear",
-    dtick = 20
-  )
+    resolution = 50,
+    showland = TRUE,
+    showlakes = TRUE,
+    landcolor = toRGB("grey80"),
+    countrycolor = toRGB("grey80"),
+    lakecolor = toRGB("white"),
+    projection = list(type = "equirectangular"),
+    coastlinewidth = 2,
+    lataxis = list(
+        range = c(35, 45),
+        showgrid = TRUE,
+        tickmode = "linear",
+        dtick = 10
+    ),
+    lonaxis = list(
+        range = c(-10, 2),
+        showgrid = TRUE,
+        tickmode = "linear",
+        dtick = 20
+    )
 )
 
 
@@ -186,31 +187,31 @@ p <- plotly(username = "bojje", key= "yvlnbgl4uh")
 res <- plot_ly(na.omit(testafs), lon = lonafs, lat = latafs,
                marker = list(size = sqrt(testafs$freq)+7), fillcolor = 'purple', type = 'scattergeo', locationmode = 'ESP',
                inherit = FALSE, text = test1
-               ) %>%
-  add_trace(na.omit(test), lon = list(lonafs, lonmod), lat = list(latafs, latmod),
-            group = test,
-            mode = 'lines', line = list(width = 1, color = 'red'),
-            type = 'scattergeo', locationmode = 'ESP',
-            text = metadata$dokument.nr, data = na.omit(metadata)
-  ) %>%
-  add_trace(na.omit(testmod), lon = lonmod, lat = latmod,
-            marker = list(size = sqrt(testmod$freq)+5), fillcolor = 'blue', type = 'scattergeo', locationmode = 'ESP',
-            inherit = TRUE, text = test2
-  )
+) %>%
+    add_trace(na.omit(test), lon = list(lonafs, lonmod), lat = list(latafs, latmod),
+              group = test,
+              mode = 'lines', line = list(width = 1, color = 'red'),
+              type = 'scattergeo', locationmode = 'ESP',
+              text = metadata$dokument.nr, data = na.omit(metadata)
+    ) %>%
+    add_trace(na.omit(testmod), lon = lonmod, lat = latmod,
+              marker = list(size = sqrt(testmod$freq)+5), fillcolor = 'blue', type = 'scattergeo', locationmode = 'ESP',
+              inherit = TRUE, text = test2
+    )
 #  add_trace(na.omit(testafs), lon = lonafs, lat = latafs,
- #          marker = list(size = testafs$freq/15), fillcolor = 'red', type = 'scattergeo', locationmode = 'ESP',
-  #          inherit = FALSE
-  #) %>% 
-  layout(title = 'Avilia',
-         geo = geo,
-         autosize = T,
+#          marker = list(size = testafs$freq/15), fillcolor = 'red', type = 'scattergeo', locationmode = 'ESP',
+#          inherit = FALSE
+#) %>% 
+layout(title = 'Avilia',
+       geo = geo,
+       autosize = T,
        #  width = 2400,
-        # height = 1800,
-         hovermode = T,
+       # height = 1800,
+       hovermode = T,
        showlegend = FALSE
-         )
+)
 
-  
+
 #plotly_POST(res, filename = "r-docs/avilia", world_readable=TRUE)
 
 #Laver netværks graf: 
@@ -219,16 +220,16 @@ metadata$test1[metadata$test1 == "NA"] <- NA
 metadata$test2[metadata$test2 == "NA"] <- NA
 
 #g <- graph.data.frame(as.matrix(na.omit(metadata[,c(27,28)])),directed=TRUE)
-#### 1570
+#### 1567
 dda <- subset(na.omit(metadata), årstal <= 1567)#  & årstal < 1580 )
 netvaerk <- na.omit(dda[,c(27,28)])
 netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
 #netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
 g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
-E(g)$arrow.width <- .3
-set.seed(50)
-layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
-plot(g, edge.width=netvaerk$freq*2, vertex.size=1, vertex.shape = "circle", layout = layout)
+E(g)$arrow.width <- 1
+set.seed(2)
+layout <- layout.fruchterman.reingold(g, niter=100,area=vcount(g)^1,repulserad=vcount(g)^1)
+plot(g, edge.width=log(netvaerk$freq+1)*2, edge.label=netvaerk$freq, vertex.size=1, vertex.shape = "circle", layout = layout)
 
 #### 1570
 dda <- subset(na.omit(metadata), årstal %in% 1568:1570) 
@@ -236,10 +237,10 @@ netvaerk <- na.omit(dda[,c(27,28)])
 netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
 #netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
 g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
-E(g)$arrow.width <- .3
+E(g)$arrow.width <- 1
 set.seed(50)
 layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
-plot(g, edge.width=netvaerk$freq*2, vertex.size=1, vertex.shape = "circle", layout = layout)
+plot(g, edge.width=log(netvaerk$freq+1)*2, edge.label=netvaerk$freq, vertex.size=1, vertex.shape = "circle", layout = layout)
 
 #### 1570-1575
 dda <- subset(na.omit(metadata), årstal %in% 1571:1575) 
@@ -247,10 +248,10 @@ netvaerk <- na.omit(dda[,c(27,28)])
 netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
 #netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
 g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
-E(g)$arrow.width <- .3
-set.seed(2)
+E(g)$arrow.width <- 1
+set.seed(433)
 layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
-plot(g, edge.width=netvaerk$freq*2, vertex.size=1, vertex.shape = "circle", layout = layout)
+plot(g, edge.width=log(netvaerk$freq+1)*2, edge.label=netvaerk$freq, vertex.size=1, vertex.shape = "circle", layout = layout)
 
 #### 1575-1577
 dda <- subset(na.omit(metadata), årstal %in% 1576:1577) 
@@ -261,9 +262,9 @@ g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
 E(g)$arrow.width <- 1
 set.seed(10)
 layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
-plot(g, edge.width=netvaerk$freq*0.2, vertex.size=1, vertex.shape = "circle", layout = layout)
+plot(g, edge.width=log(netvaerk$freq+1)*2, edge.label=netvaerk$freq, vertex.size=.1, vertex.shape = "circle", layout = layout)
 
-#### 1577-????
+#### 1577-1594
 dda <- subset(na.omit(metadata), årstal %in% 1578:1595) 
 netvaerk <- na.omit(dda[,c(27,28)])
 netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
@@ -272,7 +273,8 @@ g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
 E(g)$arrow.width <- 1
 set.seed(14)
 layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
-plot(g, edge.width=netvaerk$freq*0.2, vertex.size=1, vertex.shape = "circle", layout = layout)
+plot(g, edge.width=log(netvaerk$freq+1)*2, edge.label=netvaerk$freq, vertex.size=0.1, vertex.shape = "circle", layout = layout)
+
 
 #install.packages("qgraph", dependencies = TRUE)
 #library("qgraph")
@@ -283,7 +285,7 @@ plot(g, edge.width=netvaerk$freq*0.2, vertex.size=1, vertex.shape = "circle", la
 library(devtools)
 #install_github('arcdiagram', username = 'gastonstat')
 library(arcdiagram)
-arcplot(as.matrix(netvaerk[,c(1,2)]), sorted = TRUE, decreasing = FALSE)
+arcplot(as.matrix(netvaerk[,c(1,2)]), sorted = TRUE, decreasing = FALSE, horizontal=FALSE)
 #To do: find noget retning eller afsender/modtager på det; måske evt med frekvens nedenunder. 
 #laver måske en tidslig dimension
 
