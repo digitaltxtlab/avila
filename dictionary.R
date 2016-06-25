@@ -114,14 +114,15 @@ provalis <- dfm(corpus, dictionary=dict) %>%
     as.data.frame()
 provalis_norm <- dfm(norm_corpus, dictionary=dict) %>% 
     as.data.frame()
-provalis_norm_all <- cbind("year"=as.integer(as.character(norm_doc$year)), provalis_norm)
+names(provalis_norm) <- tolower(names(provalis_norm))
 
-provalis <- cbind("barrier"=rowSums(provalis[,1:7]), 
-                  "penetration"=rowSums(provalis[,8:14]))
-provalis_norm <- cbind("barrier"=rowSums(provalis_norm[,1:7]), 
-                       "penetration"=rowSums(provalis_norm[,8:14]))
-metadata <- cbind(metadata, provalis)
-norm_doc <- cbind(norm_doc, provalis_norm)
+provalis_sum <- cbind("barrier"=rowSums(provalis[,1:7]), 
+                      "penetration"=rowSums(provalis[,8:14]))
+provalis_norm_sum <- cbind("barrier"=rowSums(provalis_norm[,1:7]), 
+                           "penetration"=rowSums(provalis_norm[,8:14]))
+metadata <- cbind(metadata, provalis_sum)
+norm_doc <- cbind(norm_doc, provalis_norm_sum) %>% 
+    cbind(., provalis_norm)
 
 # liwc
 liwc <- dfm(corpus, dictionary=dict_liwc) %>% 
@@ -135,79 +136,101 @@ cogproc <- c("insight", "cause", "discrep", "tentat", "certain")
 perproc <- c("see", "hear", "feel")
 bioproc <- c("body", "health", "sexual", "ingest")
 
-metadata <- cbind(metadata, liwc[, c(personal, affect, cogproc, perproc, bioproc)])
+#metadata <- cbind(metadata, liwc[, c(personal, affect, cogproc, perproc, bioproc)])
 norm_doc <- cbind(norm_doc, liwc_norm[, c(personal, affect, cogproc, perproc, bioproc)])
 norm_doc$year <- as.integer(as.character(norm_doc$year))
 
 # visualize normalized dict scores (per year)
 norm_doc_vis <- norm_doc[, -c(2, 3)] %>% 
     aggregate(data=., .~year, mean)
+norm_doc_vis <- norm_doc[, -c(2, 3)] %>% 
+    aggregate(data=., .~year, sd) %>% 
+    cbind(norm_doc_vis, .)
+norm_doc_vis[,41] <- NULL
+names(norm_doc_vis) <- c("year",
+                         paste0(names(norm_doc_vis[,c(2:40)]), "_mean"),
+                         paste0(names(norm_doc_vis[, c(41:79)]), "_sd"))
+#write.csv(norm_doc, "~/Desktop/dictscores.csv")
+#write.csv(norm_doc_vis, "~/Desktop/featurematrix.csv")
 
 # provalis
-provalis_vis <- melt(norm_doc_vis[, c(1, 2:3)], "year")
+provalis_vis <- melt(norm_doc_vis[, c(1, 2:3)], "year") %>% 
+    cbind(., sd = melt(norm_doc_vis[, c(1, 41:42)], "year")[,3])
+provalis_vis[,2] <- str_replace(provalis_vis[,2], pattern="_mean", "")
 ggplot(provalis_vis, aes(year, value, color=variable)) +
     geom_line() +
+    geom_point() +
+    geom_errorbar(aes(ymin=value-sd, ymax=value+sd), alpha=0.5) +
     labs(x="Year", y="Score") +
     theme(legend.title=element_blank())
 
-provalis_vis_all <- melt(provalis_norm_all[, c(1, 2:6, 9:15)], "year") %>% 
-    aggregate(data=., value~variable+year, mean)
-provalis_vis_all <- cbind(colsplit(tolower(provalis_vis_all$variable), " ", c("type", "category")), provalis_vis_all)
-provalis_vis_all$category <- gsub(x=provalis_vis_all$category, "total.", "")
-provalis_vis_all$variable <- NULL
 
-ggplot(provalis_vis_all, aes(year, value, color=category)) +
+provalis_vis_all <- melt(norm_doc_vis[, c(1, 4:8, 11:17)], "year") %>% 
+    cbind(., sd = melt(norm_doc_vis[, c(1, 43:47, 50:56)], "year")[,3])
+provalis_vis_all[,2] <- str_replace(provalis_vis_all[,2], pattern="_mean", "")
+provalis_vis_all[,2] <- str_replace(provalis_vis_all[,2], pattern=" total.", " ")
+provalis_vis_all[,2] <- str_replace(provalis_vis_all[,2], pattern="barrier ", "")
+provalis_vis_all[,2] <- str_replace(provalis_vis_all[,2], pattern="penetration ", "")
+provalis_vis_all$type <- c(rep("barrier", 100), rep("penetration", 140))
+sd_reset <- unique(provalis_vis_all$variable)[c(1:6, 8:12)] # include for tidy plot
+provalis_vis_all[provalis_vis_all$variable %in% sd_reset, "sd"] <- NA # include for tidy plot
+ggplot(provalis_vis_all, aes(year, value, color=variable)) +
     geom_line() +
+    geom_point() +
+    geom_errorbar(aes(ymin=ifelse((value-sd)>0, value-sd, 0), ymax=value+sd), alpha=0.5) +
     facet_wrap(~type) +
     labs(x="Year", y="Score") +
     scale_color_brewer(palette="Paired") +
     theme(legend.title=element_blank())
 
 # LIWC
-personal_vis <- melt(norm_doc_vis[, c(1, 4:9)], "year")
+personal_vis <- melt(norm_doc_vis[, c(1, 18:23)], "year") %>% 
+    cbind(., sd = melt(norm_doc_vis[, c(1, 57:62)], "year")[,3])
+personal_vis[,2] <- str_replace(personal_vis[,2], pattern="_mean", "")
 ggplot(personal_vis, aes(year, value, color=variable)) +
     geom_line() +
+    geom_point() +
+    geom_errorbar(aes(ymin=ifelse((value-sd)>0, value-sd, 0), ymax=value+sd), alpha=0.3) +
     labs(x="Year", y="Score") +
     theme(legend.title=element_blank())
 
-affect_vis <- melt(norm_doc_vis[, c(1, 10:14)], "year")
+affect_vis <- melt(norm_doc_vis[, c(1, 24:28)], "year") %>%
+    cbind(., sd = melt(norm_doc_vis[, c(1, 63:67)], "year")[,3])
+affect_vis[,2] <- str_replace(affect_vis[,2], pattern="_mean", "")
 ggplot(affect_vis, aes(year, value, color=variable)) +
     geom_line() +
+    geom_point() +
+    geom_errorbar(aes(ymin=ifelse((value-sd)>0, value-sd, 0), ymax=value+sd), alpha=0.3) +
     labs(x="Year", y="Score") +
     theme(legend.title=element_blank())
 
-cogproc_vis <- melt(norm_doc_vis[, c(1, 15:19)], "year")
+cogproc_vis <- melt(norm_doc_vis[, c(1, 29:33)], "year") %>%
+    cbind(., sd = melt(norm_doc_vis[, c(1, 68:72)], "year")[,3])
+cogproc_vis[,2] <- str_replace(cogproc_vis[,2], pattern="_mean", "")
 ggplot(cogproc_vis, aes(year, value, color=variable)) +
     geom_line() +
+    geom_point() +
+    geom_errorbar(aes(ymin=ifelse((value-sd)>0, value-sd, 0), ymax=value+sd), alpha=0.3) +
     labs(x="Year", y="Score") +
     theme(legend.title=element_blank())
 
-perproc_vis <- melt(norm_doc_vis[, c(1, 20:22)], "year")
+perproc_vis <- melt(norm_doc_vis[, c(1, 34:36)], "year") %>%
+    cbind(., sd = melt(norm_doc_vis[, c(1, 73:75)], "year")[,3])
+perproc_vis[,2] <- str_replace(perproc_vis[,2], pattern="_mean", "")
 ggplot(perproc_vis, aes(year, value, color=variable)) +
     geom_line() +
+    geom_point() +
+    geom_errorbar(aes(ymin=ifelse((value-sd)>0, value-sd, 0), ymax=value+sd), alpha=0.3) +
     labs(x="Year", y="Score") +
     theme(legend.title=element_blank())
 
-bioproc_vis <- melt(norm_doc_vis[, c(1, 23:26)], "year")
+bioproc_vis <- melt(norm_doc_vis[, c(1, 37:40)], "year") %>%
+    cbind(., sd = melt(norm_doc_vis[, c(1, 76:79)], "year")[,3])
+bioproc_vis[,2] <- str_replace(bioproc_vis[,2], pattern="_mean", "")
 ggplot(bioproc_vis, aes(year, value, color=variable)) +
     geom_line() +
+    geom_point() +
+    geom_errorbar(aes(ymin=ifelse((value-sd)>0, value-sd, 0), ymax=value+sd), alpha=0.3) +
     labs(x="Year", y="Score") +
     theme(legend.title=element_blank())
-
-
-# visualize unnormalized dict scores (per year)
-
-
-
-# normalisér ved at klippe tekster op med median-tekstens længde (drop residual-tekst per værk)
-# kør LIWC og barrier/penetration; 
-# mean score per år
-# evt. standardiser scores (0-1)
-# plot scores per år for alle kategorier
-
-
-
-
-
-
 

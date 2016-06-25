@@ -275,6 +275,23 @@ set.seed(14)
 layout <- layout_with_lgl(g, area = vcount(g)^6, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
 plot(g, edge.width=log(netvaerk$freq+1)*2, edge.label=netvaerk$freq, vertex.size=0.1, vertex.shape = "circle", layout = layout)
 
+<<<<<<< HEAD
+=======
+
+#### all years
+all <- function(x) {
+    dda <- subset(na.omit(metadata), årstal %in% 0:1595) 
+    netvaerk <- na.omit(dda[,c(27,28)])
+    netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+    #netvaerk <- unique(count(na.omit(dda[,c(27,28)])))
+    g <- graph.data.frame(as.matrix(na.omit(netvaerk[,c(1,2)])),directed=TRUE)
+    E(g)$arrow.width <- 1
+    set.seed(x)
+    layout <- layout_with_lgl(g, area = vcount(g)^12, repulserad=vcount(g)^6)#layout.fruchterman.reingold(g, niter=5000,area=vcount(g)^30,repulserad=vcount(g)^20)
+    plot(g, edge.width=log(netvaerk$freq+1)*2, vertex.size=1, vertex.shape = "circle", layout = layout)
+}
+all(890908412)
+>>>>>>> 705911bcf3cbed113872b193a1b36e8734111ed6
 
 #install.packages("qgraph", dependencies = TRUE)
 #library("qgraph")
