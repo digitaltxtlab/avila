@@ -1,0 +1,39 @@
+---
+title: "R Corpus Builder"
+author: "Isa Lykke Hansen"
+date: "6/7/2017"
+output: html_document
+---
+
+Setup
+```{r setup, include=FALSE}
+#!/usr/bin/Rscript
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+p_load(tm) #loading the tm package
+setwd("~/Dropbox/IMC/Avila") #change this to fit your path to the avila folder
+dd = "data/plain_data/"
+
+avila.files = list.files (path = dd)
+docs <- c(avila.files)
+
+```
+
+Import data
+```{r}
+books.cor  <- Corpus(VectorSource(docs), readerControl = list(language = "lat"))
+
+
+```
+
+Add metadata
+```{r}
+
+
+```
+
+Clean data
+```{r}
+
+```
