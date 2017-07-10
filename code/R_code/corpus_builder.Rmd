@@ -7,7 +7,6 @@ output: html_document
 
 Setup
 ```{r setup, include=FALSE}
-#!/usr/bin/Rscript
 knitr::opts_chunk$set(echo = TRUE)
 
 library(pacman)
@@ -15,15 +14,15 @@ p_load(tm) #loading the tm package
 setwd("~/Dropbox/IMC/Avila") #change this to fit your path to the avila folder
 dd = "data/plain_data/"
 
-avila.files = list.files (path = dd)
-docs <- c(avila.files)
+dd = "~/Dropbox/IMC/Avila/data/plain_data";
+setwd(dd)
 
 ```
 
 Import data
 ```{r}
-books.cor  <- Corpus(VectorSource(docs), readerControl = list(language = "lat"))
 
+books.cor  <- Corpus(DirSource(dd, encoding = "UTF-8"), readerControl = list(language = "lat"))
 
 ```
 
