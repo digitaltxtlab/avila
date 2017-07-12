@@ -10,11 +10,9 @@ Setup
 knitr::opts_chunk$set(echo = TRUE)
 
 library(pacman)
-p_load(tm) #loading the tm package
-setwd("~/Dropbox/IMC/Avila") #change this to fit your path to the avila folder
-dd = "data/plain_data/"
+p_load(tm,SnowballC) #loading the tm package
 
-dd = "~/Dropbox/IMC/Avila/data/plain_data";
+dd = "~/Dropbox/IMC/Avila/data/plain_data"; #insert your own datapath here
 setwd(dd)
 
 ```
@@ -22,7 +20,21 @@ setwd(dd)
 Import data
 ```{r}
 
-books.cor  <- Corpus(DirSource(dd, encoding = "UTF-8"), readerControl = list(language = "lat"))
+books.cor  <- Corpus(DirSource(dd, encoding = "UTF-8"), readerControl = list(language = "lat")) #import all texts to a corpus
+
+# preprocess
+clean_corpus <- function(corpus){
+  main <- tm_map(books.cor, PlainTextDocument)
+  main <- tm_map(main, content_transformer(tolower))
+  main <- tm_map(main,removePunctuation)
+  main <- tm_map(main,removeNumbers)
+  main <- tm_map(books.cor, removeWords, stopwords("english"))
+  main <- tm_map(books.cor, stemDocument)
+  main <- tm_map(main, stripWhitespace)
+  return(main)
+}
+
+clean.corpus <- clean_corpus(books.cor)
 
 ```
 
