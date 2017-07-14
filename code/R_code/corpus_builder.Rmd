@@ -5,24 +5,45 @@ date: "6/7/2017"
 output: html_document
 ---
 
-Setup
+##Setup
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 library(pacman)
 p_load(tm,SnowballC) #loading the tm package
 
-dd = "~/Dropbox/IMC/Avila/data/plain_data"; #insert your own datapath here
-setwd(dd)
+wd = "~/Dropbox/IMC/Avila"; #insert path to Avila
+setwd(wd)
 
 ```
 
-Import data
+##Import data
 ```{r}
 
-books.cor  <- Corpus(DirSource(dd, encoding = "UTF-8"), readerControl = list(language = "lat")) #import all texts to a corpus
+books.cor  <- Corpus(DirSource(paste(wd,"/data/plain_data", sep=''), encoding = "UTF-8"), readerControl = list(language = "lat")) #import all texts in the plain data folder to a corpus
 
-# preprocess
+```
+
+##Add metadata
+
+In the texts the following acromyms are used:
+
+tes= spiritual testimonies
+sol=soliloquies
+minor= minor works
+```{r}
+
+
+
+
+```
+
+##Clean data
+```{r}
+
+stop.words = read.table(paste(wd,"/data/stopword_us.txt",sep=''))
+
+# clean corpus
 clean_corpus <- function(corpus){
   main <- tm_map(books.cor, PlainTextDocument)
   main <- tm_map(main, content_transformer(tolower))
@@ -35,16 +56,5 @@ clean_corpus <- function(corpus){
 }
 
 clean.corpus <- clean_corpus(books.cor)
-
-```
-
-Add metadata
-```{r}
-
-
-```
-
-Clean data
-```{r}
 
 ```
