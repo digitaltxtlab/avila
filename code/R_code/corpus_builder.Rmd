@@ -47,10 +47,10 @@ stop.words = as.character(read.table(paste(wd,"/data/stopword_us.txt",sep=''))[,
 clean_corpus <- function(corpus){
   main <- tm_map(books.cor, PlainTextDocument)
   main <- tm_map(main, content_transformer(tolower))
-  main <- tm_map(main,removePunctuation)
-  main <- tm_map(main,removeNumbers)
-  main <- tm_map(books.cor, removeWords, stop.words) #alternatively, use: stopwords("english")
-  main <- tm_map(books.cor, stemDocument)
+  main <- tm_map(main, removePunctuation)
+  main <- tm_map(main, removeNumbers)
+  main <- tm_map(main, removeWords, stop.words) #alternatively, use: stopwords("english")
+  main <- tm_map(main, stemDocument)
   main <- tm_map(main, stripWhitespace)
   return(main)
 }
