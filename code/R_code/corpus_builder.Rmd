@@ -41,7 +41,7 @@ minor= minor works
 ##Clean data
 ```{r}
 
-stop.words = read.table(paste(wd,"/data/stopword_us.txt",sep=''))
+stop.words = as.character(read.table(paste(wd,"/data/stopword_us.txt",sep=''))[,1]) #import our own, more elaborate list of words to be removed from the text
 
 # clean corpus
 clean_corpus <- function(corpus){
@@ -49,7 +49,7 @@ clean_corpus <- function(corpus){
   main <- tm_map(main, content_transformer(tolower))
   main <- tm_map(main,removePunctuation)
   main <- tm_map(main,removeNumbers)
-  main <- tm_map(books.cor, removeWords, stopwords("english"))
+  main <- tm_map(books.cor, removeWords, stop.words) #alternatively, use: stopwords("english")
   main <- tm_map(books.cor, stemDocument)
   main <- tm_map(main, stripWhitespace)
   return(main)
