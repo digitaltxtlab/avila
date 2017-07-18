@@ -5,9 +5,7 @@ date: "6/7/2017"
 output: html_document
 ---
 
-This document is ment for creating a clean corpus containing all the avila texts and metadata
-You can chose to include all or only some of the texts, by changing the ??
-
+This document is ment for creating a clean corpus containing all the avila texts and the metadata partaining to these
 
 ##Setup
 ```{r setup, include=FALSE}
@@ -23,13 +21,13 @@ setwd(wd) #set the working directory to be the Avila folder
 ##Import data
 ```{r}
 
-books.cor  <- Corpus(DirSource(paste(wd,"/data/plain_data", sep=''), encoding = "UTF-8"), readerControl = list(language = "lat")) #import all texts in the plain data folder to a SimpleCorpus
+books.cor  <- VCorpus(DirSource(paste(wd,"/data/plain_data", sep=''), encoding = "UTF-8"), readerControl = list(language = "lat")) #import all texts in the plain data folder to a SimpleCorpus
 
 ```
 
 ##Add metadata
 
-In the csv file the following acromyms are used:
+In the csv file the following acromyms are used in the "format" column:
 
 tes= spiritual testimonies
 sol=soliloquies
@@ -40,35 +38,25 @@ meta <- read.csv(paste(wd,"/data/meta_data/metadata.csv", sep=''),sep = ";") #im
 
 filenames <- file_path_sans_ext(names(books.cor)) #extract the filenames without the ending
 
-### add metadata
-names(books.cor) <- filenames
-
-# metadata at corpus level w. user-defined tags
-meta(books.cor, type = 'corpus')
-meta(books.cor, tag = 'collection', type = 'corpus') <- "bible"
-meta(books.cor, tag = 'version', type = 'corpus') <- "kjv"
-meta(books.cor, type = 'corpus')
-
-
-# metadata at document level
-meta(books.cor, type = 'local')
-books.cor[[2]]$meta$author <- 'paul'
-books.cor[[2]]$meta$description <- 'letter'
-books.cor[[2]]$meta$language <- 'english'
-books.cor[[2]]$meta$origin <- 54
-
 # add external metadata at document level
 
 for (i in 1:length(books.cor)){
-  books.cor[[i]]$meta$description <- as.character(meta$format[[i]])# pre-defined tag
+  books.cor[[i]]$meta$document_no <- as.character(meta$document_no[[i]])
+  books.cor[[i]]$meta$name <- as.character(meta$name[[i]])
+  books.cor[[i]]$meta$format <- as.character(meta$format[[i]])
+  books.cor[[i]]$meta$year <- as.character(meta$year[[i]])
+  books.cor[[i]]$meta$month <- as.character(meta$month[[i]])
+  books.cor[[i]]$meta$day <- as.character(meta$day[[i]])
+  books.cor[[i]]$meta$sender_city <- as.character(meta$sendercity[[i]])
+  books.cor[[i]]$meta$reciever <- as.character(meta$narecieverme[[i]])
+  books.cor[[i]]$meta$reciever_city <- as.character(meta$reciever_city[[i]])
+  books.cor[[i]]$meta$incomplete <- as.character(meta$incomplete[[i]])
+  books.cor[[i]]$meta$no_chapters <- as.character(meta$no_chapters[[i]])
+  books.cor[[i]]$meta$book <- as.character(meta$book[[i]])
+  books.cor[[i]]$meta$notes <- as.character(meta$notes[[i]])
+  books.cor[[i]]$meta$translator <- as.character(meta$translator[[i]])
+  books.cor[[i]]$meta$filename <- as.character(filenames[[i]])
 }
-
-# predefined attributes
-# filter on metadata
-idx <- meta(books.cor, type = 'local',"collection") == 'new'
-nt.cor <- books.cor[idx]# new testament
-
-
 
 ```
 
