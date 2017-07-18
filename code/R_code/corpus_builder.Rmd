@@ -38,7 +38,7 @@ meta <- read.csv(paste(wd,"/data/meta_data/metadata.csv", sep=''),sep = ";") #im
 
 filenames <- file_path_sans_ext(names(books.cor)) #extract the filenames without the ending
 
-# add external metadata at document level
+# add all the external metadata at document level
 
 for (i in 1:length(books.cor)){
   books.cor[[i]]$meta$document_no <- as.character(meta$document_no[[i]])
@@ -67,8 +67,8 @@ stop.words = as.character(read.table(paste(wd,"/data/stopword_us.txt",sep=''))[,
 
 # clean corpus
 clean_corpus <- function(corpus){
-  main <- tm_map(books.cor, PlainTextDocument)
-  main <- tm_map(main, content_transformer(tolower))
+  #main <- tm_map(books.cor, PlainTextDocument) #is this important? - because it removes the metadata
+  main <- tm_map(books.cor, content_transformer(tolower))
   main <- tm_map(main, removePunctuation)
   main <- tm_map(main, removeNumbers)
   main <- tm_map(main, removeWords, stop.words) #alternatively, use: stopwords("english")
@@ -77,6 +77,6 @@ clean_corpus <- function(corpus){
   return(main)
 }
 
-clean.corpus <- clean_corpus(books.cor)
+clean.corpus <- clean_corpus(books.cor) #return the cleaned corpus
 
 ```
