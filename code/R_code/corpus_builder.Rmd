@@ -5,34 +5,68 @@ date: "6/7/2017"
 output: html_document
 ---
 
+This document is ment for creating a clean corpus containing all the avila texts and metadata
+You can chose to include all or only some of the texts, by changing the ??
+
+
 ##Setup
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 library(pacman)
-p_load(tm,SnowballC) #loading the tm package
-
-wd = "~/Dropbox/IMC/Avila"; #insert path to Avila
-setwd(wd)
+p_load(tm,SnowballC,tools) #loading packages to be used
+wd = "~/Dropbox/IMC/Avila"; #insert path to Avila folder
+setwd(wd) #set the working directory to be the Avila folder
 
 ```
 
 ##Import data
 ```{r}
 
-books.cor  <- Corpus(DirSource(paste(wd,"/data/plain_data", sep=''), encoding = "UTF-8"), readerControl = list(language = "lat")) #import all texts in the plain data folder to a corpus
+books.cor  <- Corpus(DirSource(paste(wd,"/data/plain_data", sep=''), encoding = "UTF-8"), readerControl = list(language = "lat")) #import all texts in the plain data folder to a SimpleCorpus
 
 ```
 
 ##Add metadata
 
-In the texts the following acromyms are used:
+In the csv file the following acromyms are used:
 
 tes= spiritual testimonies
 sol=soliloquies
 minor= minor works
-```{r}
 
+```{r}
+meta <- read.csv(paste(wd,"/data/meta_data/metadata.csv", sep=''),sep = ";") #import the metadata
+
+filenames <- file_path_sans_ext(names(books.cor)) #extract the filenames without the ending
+
+### add metadata
+names(books.cor) <- filenames
+
+# metadata at corpus level w. user-defined tags
+meta(books.cor, type = 'corpus')
+meta(books.cor, tag = 'collection', type = 'corpus') <- "bible"
+meta(books.cor, tag = 'version', type = 'corpus') <- "kjv"
+meta(books.cor, type = 'corpus')
+
+
+# metadata at document level
+meta(books.cor, type = 'local')
+books.cor[[2]]$meta$author <- 'paul'
+books.cor[[2]]$meta$description <- 'letter'
+books.cor[[2]]$meta$language <- 'english'
+books.cor[[2]]$meta$origin <- 54
+
+# add external metadata at document level
+
+for (i in 1:length(books.cor)){
+  books.cor[[i]]$meta$description <- as.character(meta$format[[i]])# pre-defined tag
+}
+
+# predefined attributes
+# filter on metadata
+idx <- meta(books.cor, type = 'local',"collection") == 'new'
+nt.cor <- books.cor[idx]# new testament
 
 
 
