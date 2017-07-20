@@ -1,16 +1,16 @@
 ---
-title: "R Corpus Builder"
-author: "Isa Lykke Hansen"
+title: "Avila Corpus Builder"
+author: "Isa Lykke Hansen - i@lykkeh.dk"
 date: "6/7/2017"
 output: html_document
 ---
 
-This document is ment for creating a clean corpus containing all the avila texts and the metadata partaining to these
+This markdown is ment for creating a clean corpus containing all the avila texts and the metadata partaining to these
 
-##Setup
-```{r setup, include=FALSE}
+```{r setup, include=FALSE} 
+#Setup
+
 knitr::opts_chunk$set(echo = TRUE)
-
 library(pacman)
 p_load(tm,SnowballC,tools) #loading packages to be used
 wd = "~/Dropbox/IMC/Avila"; #insert path to Avila folder
@@ -18,20 +18,22 @@ setwd(wd) #set the working directory to be the Avila folder
 
 ```
 
-##Import data
+###Import data  
+Imports all the datafiles from the data_plain folder into a "Versatile Corpus"  
 ```{r}
 
-books.cor  <- VCorpus(DirSource(paste(wd,"/data/plain_data", sep=''), encoding = "UTF-8"), readerControl = list(language = "lat")) #import all texts in the plain data folder to a SimpleCorpus
+books.cor  <- VCorpus(DirSource(paste(wd,"/data/plain_data", sep=''), encoding = "UTF-8"), readerControl = list(language = "lat")) #import all texts in the plain data folder to a corpus
 
 ```
 
-##Add metadata
-
-In the csv file the following acromyms are used in the "format" column:
-
-tes= spiritual testimonies
-sol=soliloquies
-minor= minor works
+###Add metadata
+Adds all the metadata from the metadata csv to the Versatile Corpus created abov  
+Also adds a "filename" variable, extracted from the name of the file
+  
+Note: In the csv file the following acromyms are used in the "format" column:  
+tes= spiritual testimonies  
+sol=soliloquies  
+minor= minor works  
 
 ```{r}
 meta <- read.csv(paste(wd,"/data/meta_data/metadata.csv", sep=''),sep = ";") #import the metadata
@@ -60,7 +62,8 @@ for (i in 1:length(books.cor)){
 
 ```
 
-##Clean data
+###Clean data  
+Finally, we clean the corpus, by mapping a series of tm functions to all the texts
 ```{r}
 
 stop.words = as.character(read.table(paste(wd,"/data/stopword_us.txt",sep=''))[,1]) #import our own, more elaborate list of words to be removed from the text
@@ -68,12 +71,12 @@ stop.words = as.character(read.table(paste(wd,"/data/stopword_us.txt",sep=''))[,
 # clean corpus
 clean_corpus <- function(corpus){
   #main <- tm_map(books.cor, PlainTextDocument) #is this important? - because it removes the metadata
-  main <- tm_map(books.cor, content_transformer(tolower))
-  main <- tm_map(main, removePunctuation)
-  main <- tm_map(main, removeNumbers)
+  main <- tm_map(books.cor, content_transformer(tolower)) #transforms all letters to lowercase
+  main <- tm_map(main, removePunctuation) #removes punctuationmarks
+  main <- tm_map(main, removeNumbers) #removes numbers
   main <- tm_map(main, removeWords, stop.words) #alternatively, use: stopwords("english")
-  main <- tm_map(main, stemDocument)
-  main <- tm_map(main, stripWhitespace)
+  main <- tm_map(main, stemDocument) #transforms all words to their word stem
+  main <- tm_map(main, stripWhitespace) #removes excess whitespace
   return(main)
 }
 
