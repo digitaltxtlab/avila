@@ -11,23 +11,35 @@ This markdown is ment for creating a clean corpus containing all the avila texts
 #Setup
 
 knitr::opts_chunk$set(echo = TRUE)
+
 library(pacman)
-p_load(tm,SnowballC,tools) #loading packages to be used
-wd = "~/Dropbox/IMC/Avila"; #insert path to Avila folder
-setwd(wd) #set the working directory to be the Avila folder
+p_load(tm, #for textmining
+       SnowballC, #for stemming
+       tools, #for removing filepath
+       gtools) #for sorting files
+
+wd <- "~/Dropbox/IMC/Avila/" #NB change this working directory so it points to your local Avila folder
+setwd(wd) 
 
 ```
 
 ###Import data  
-Imports all the datafiles from the data_plain folder into a "Versatile Corpus"  
+Imports all the datafiles from the data_plain folder into a "Volatile Corpus"  
 ```{r}
 
-books.cor  <- VCorpus(DirSource(paste(wd,"/data/plain_data", sep=''), encoding = "UTF-8"), readerControl = list(language = "lat")) #import all texts in the plain data folder to a corpus
+files <- list.files(path="data/plain_data")
+files <- mixedsort(files)
+
+us <- paste(wd, "data/plain_data/",sep='') %>%
+  paste(files, sep='') %>%
+  URISource(encoding = "UTF-8",mode = "text")
+
+books.cor  <- VCorpus(us, readerControl = list(language = "lat")) #import all texts in the plain data folder to a corpus
 
 ```
 
 ###Add metadata
-Adds all the metadata from the metadata csv to the Versatile Corpus created abov  
+Adds all the metadata from the metadata csv to the Versatile Corpus created above  
 Also adds a "filename" variable, extracted from the name of the file
   
 Note: In the csv file the following acromyms are used in the "format" column:  
@@ -36,6 +48,7 @@ sol=soliloquies
 minor= minor works  
 
 ```{r}
+
 meta <- read.csv(paste(wd,"/data/meta_data/metadata.csv", sep=''),sep = ";") #import the metadata
 
 filenames <- file_path_sans_ext(names(books.cor)) #extract the filenames without the ending
@@ -80,6 +93,6 @@ clean_corpus <- function(corpus){
   return(main)
 }
 
-clean.corpus <- clean_corpus(books.cor) #return the cleaned corpus
+clean.corpus <- clean_corpus(books.cor) #returns the cleaned corpus
 
 ```
