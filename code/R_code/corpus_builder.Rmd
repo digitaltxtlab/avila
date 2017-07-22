@@ -16,7 +16,8 @@ library(pacman)
 p_load(tm, #for textmining
        SnowballC, #for stemming
        tools, #for removing filepath
-       gtools) #for sorting files
+       gtools, #for sorting files
+       tidyverse) #for piping
 
 wd <- "~/Dropbox/IMC/Avila/" #NB change this working directory so it points to your local Avila folder
 setwd(wd) 
@@ -26,7 +27,6 @@ setwd(wd)
 ###Import data  
 Imports all the datafiles from the data_plain folder into a "Volatile Corpus"  
 ```{r}
-
 files <- list.files(path="data/plain_data") #make a list of all the files
 files <- mixedsort(files) #sort the list numerically
 
@@ -95,5 +95,19 @@ clean_corpus <- function(corpus){
 }
 
 clean.corpus <- clean_corpus(books.cor) #returns the cleaned corpus
+
+#Alternatively (with piping):
+
+clean_corpus2 <- function(corpus){
+  main <- tm_map(books.cor, content_transformer(tolower)) %>% #transforms all letters to lowercase
+  tm_map(removePunctuation) %>% #removes punctuationmarks
+  tm_map(removeNumbers) %>% #removes numbers
+  tm_map(removeWords, stop.words) %>% #alternatively, use: stopwords("english")
+  tm_map(stemDocument) %>% #transforms all words to their word stem
+  tm_map(stripWhitespace) %>% #removes excess whitespace
+  return()
+}
+
+clean.corpus <- clean_corpus2(books.cor)
 
 ```
