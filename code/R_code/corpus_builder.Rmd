@@ -27,9 +27,10 @@ setwd(wd)
 Imports all the datafiles from the data_plain folder into a "Volatile Corpus"  
 ```{r}
 
-files <- list.files(path="data/plain_data")
-files <- mixedsort(files)
+files <- list.files(path="data/plain_data") #make a list of all the files
+files <- mixedsort(files) #sort the list numerically
 
+#make a Source object to tell VCorpus which order to import the files in:
 us <- paste(wd, "data/plain_data/",sep='') %>%
   paste(files, sep='') %>%
   URISource(encoding = "UTF-8",mode = "text")
@@ -62,8 +63,8 @@ for (i in 1:length(books.cor)){
   books.cor[[i]]$meta$year <- as.character(meta$year[[i]])
   books.cor[[i]]$meta$month <- as.character(meta$month[[i]])
   books.cor[[i]]$meta$day <- as.character(meta$day[[i]])
-  books.cor[[i]]$meta$sender_city <- as.character(meta$sendercity[[i]])
-  books.cor[[i]]$meta$reciever <- as.character(meta$narecieverme[[i]])
+  books.cor[[i]]$meta$sender_city <- as.character(meta$sender_city[[i]])
+  books.cor[[i]]$meta$reciever <- as.character(meta$reciever[[i]])
   books.cor[[i]]$meta$reciever_city <- as.character(meta$reciever_city[[i]])
   books.cor[[i]]$meta$incomplete <- as.character(meta$incomplete[[i]])
   books.cor[[i]]$meta$no_chapters <- as.character(meta$no_chapters[[i]])
