@@ -5,7 +5,16 @@ date: "6/7/2017"
 output: html_document
 ---
 
-This markdown is ment for creating a clean corpus containing all the avila texts and the metadata partaining to these
+This markdown creates a clean corpus containing all the Avila texts and the metadata partaining to these  
+The script;  
+1. imports the files, 
+2. adds the metadata
+3. cleans the corpus and returns and saves a clean corpus
+
+In the cleaning process, all footnotes are removed from the corpus
+The corpus is then saved as an RData file, which can also be found in the "data" folder
+
+In the final section I have included some useful code for inspection of the Corpus
 
 ```{r setup, include=FALSE} 
 #Setup
@@ -15,8 +24,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
 p_load(tm, #for textmining
        SnowballC, #for stemming
-       tools, #for removing filepath
+       tools, #for removing filepaths
        gtools, #for sorting files
+       textreg, #for saving corpus to Rdata
        tidyverse) #for piping
 
 wd <- "~/Dropbox/IMC/Avila/" #NB change this working directory so it points to your local Avila folder
@@ -83,22 +93,8 @@ Finally, we clean the corpus, by mapping a series of tm functions to all the tex
 stop.words = as.character(read.table(paste(wd,"/data/stopword_us.txt",sep=''))[,1]) #import our own, more elaborate list of words to be removed from the text
 
 # clean corpus
+
 clean_corpus <- function(corpus){
-  #main <- tm_map(books.cor, PlainTextDocument) #is this important? - because it removes the metadata
-  main <- tm_map(books.cor, content_transformer(tolower)) #transforms all letters to lowercase
-  main <- tm_map(main, removePunctuation) #removes punctuationmarks
-  main <- tm_map(main, removeNumbers) #removes numbers
-  main <- tm_map(main, removeWords, stop.words) #alternatively, use: stopwords("english")
-  main <- tm_map(main, stemDocument) #transforms all words to their word stem
-  main <- tm_map(main, stripWhitespace) #removes excess whitespace
-  return(main)
-}
-
-clean.corpus <- clean_corpus(books.cor) #returns the cleaned corpus
-
-#Alternatively (with piping):
-
-clean_corpus2 <- function(corpus){
   main <- tm_map(books.cor, content_transformer(tolower)) %>% #transforms all letters to lowercase
   tm_map(removePunctuation) %>% #removes punctuationmarks
   tm_map(removeNumbers) %>% #removes numbers
@@ -108,6 +104,40 @@ clean_corpus2 <- function(corpus){
   return()
 }
 
-clean.corpus <- clean_corpus2(books.cor)
+clean.corpus <- clean_corpus(books.cor) #returns the clean corpus
+
+save.corpus.to.files(clean.corpus, filename = "data/clean_corpus") #saves the cleaned corpus to a .txt and .RData file
 
 ```
+
+Additional useful code for inspecting the corpus
+Source: https://eight2late.wordpress.com/2015/05/27/a-gentle-introduction-to-text-mining-using-r/
+
+```{r}
+
+#inspects the text in the specified document
+writeLines(as.character(clean.corpus[[30]]))
+
+#make a matrix with documents in rows and unique terms in columns
+dtm <- DocumentTermMatrix(clean.corpus)
+
+#inspect a specific part of the matrix
+inspect(dtm[1:9,1700:1716])
+
+#find the frequency of different words
+freq <- colSums(as.matrix(dtm))
+length(freq)
+#order the list, according to frequency
+ord=order(freq,decreasing = TRUE)
+
+#find the most and least frequent words
+freq[head(ord)]
+freq[tail(ord)]
+#we can also look at all words that appear more than a specified number of times
+findFreqTerms(dtm,lowfreq = 100)
+
+#exporter dtm som csv
+write.csv(as.matrix(dtm), file = "data/dtm_clean_corpus.csv")
+
+```
+
