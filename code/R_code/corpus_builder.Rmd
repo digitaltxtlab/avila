@@ -11,8 +11,8 @@ The script;
 2. adds the metadata
 3. cleans the corpus and returns and saves a clean corpus
 
-In the cleaning process, all footnotes are removed from the corpus
-The corpus is then saved as an RData file, which can also be found in the "data" folder
+In the cleaning process, all footnotes are removed from the corpus - if you wish to include these (or filter out others), you can change the tm_filter line in the cleaning function  
+Lastly, the corpus is then saved as both a .txt and an RData file, which can also be found in the "data" folder
 
 In the final section I have included some useful code for inspection of the Corpus
 
@@ -29,7 +29,7 @@ p_load(tm, #for textmining
        textreg, #for saving corpus to Rdata
        tidyverse) #for piping
 
-wd <- "~/Dropbox/IMC/Avila/" #NB change this working directory so it points to your local Avila folder
+wd <- "~/your/filepath/here/Avila/" #NB change this working directory so it points to your local Avila folder!
 setwd(wd) 
 
 ```
@@ -98,9 +98,10 @@ clean_corpus <- function(corpus){
   main <- tm_map(books.cor, content_transformer(tolower)) %>% #transforms all letters to lowercase
   tm_map(removePunctuation) %>% #removes punctuationmarks
   tm_map(removeNumbers) %>% #removes numbers
-  tm_map(removeWords, stop.words) %>% #alternatively, use: stopwords("english")
+  tm_map(removeWords, stop.words) %>% #removes all words in stopword_us.txt. Alternatively use: stopwords("english")
   tm_map(stemDocument) %>% #transforms all words to their word stem
   tm_map(stripWhitespace) %>% #removes excess whitespace
+  tm_filter(FUN = function(x) meta(x)[["format"]] != "footnote") %>% #remove all the footnotes from the corpus
   return()
 }
 
@@ -110,7 +111,7 @@ save.corpus.to.files(clean.corpus, filename = "data/clean_corpus") #saves the cl
 
 ```
 
-Additional useful code for inspecting the corpus
+Additional useful code for inspecting the corpus  
 Source: https://eight2late.wordpress.com/2015/05/27/a-gentle-introduction-to-text-mining-using-r/
 
 ```{r}
@@ -135,9 +136,6 @@ freq[head(ord)]
 freq[tail(ord)]
 #we can also look at all words that appear more than a specified number of times
 findFreqTerms(dtm,lowfreq = 100)
-
-#exporter dtm som csv
-write.csv(as.matrix(dtm), file = "data/dtm_clean_corpus.csv")
 
 ```
 
