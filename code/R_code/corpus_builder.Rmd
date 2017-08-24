@@ -11,10 +11,11 @@ The script;
 2. adds the metadata
 3. cleans the corpus and returns and saves a clean corpus
 
-In the cleaning process, all footnotes are removed from the corpus - if you wish to include these (or filter out others), you can change the tm_filter line in the cleaning function  
-Lastly, the corpus is then saved as both a .txt and an RData file, which can also be found in the "data" folder
+In the cleaning process, all footnotes are removed from the corpus - if you wish to include these (or filter out others), you can change the tm_filter line in the clean_corpus function  
+Lastly, the corpus is saved as both a .txt and an .rda file, which can also be found in the "data" folder
 
-In the final section I have included some useful code for inspection of the Corpus
+In the final section I have included some useful code for inspection of the Corpus.  
+The Document Term Matrix (dtm) used in the structural analysis is created here and can also be found in the "data" folder as an .rda file
 
 ```{r setup, include=FALSE} 
 #Setup
@@ -49,7 +50,7 @@ books.cor  <- VCorpus(us, readerControl = list(language = "lat")) #import all te
 
 ```
 
-###Add metadata
+###Add metadata  
 Adds all the metadata from the metadata csv to the Versatile Corpus created above  
 Also adds a "filename" variable, extracted from the name of the file
   
@@ -136,6 +137,8 @@ freq[head(ord)]
 freq[tail(ord)]
 #we can also look at all words that appear more than a specified number of times
 findFreqTerms(dtm,lowfreq = 100)
+
+save(dtm, file = "data/avila_dtm")
 
 ```
 
