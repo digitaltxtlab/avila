@@ -1,0 +1,48 @@
+---
+title: "Structural Topic Modelling of Avila"
+author: "Isa Lykke Hansen"
+date: "21/8/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+#Setup 
+
+knitr::opts_chunk$set(echo = TRUE)
+
+#wd <- "~/your/filepath/here/avila/" #NB change this working directory so it points to your local Avila folder!
+wd <- "~/Dropbox/IMC/avila/"
+setwd(wd) 
+
+library(pacman)
+p_load(stm, #for structural topic modelling
+       Rtsne, #for determining number og topics
+       geometry) #for determining number og topics
+
+```
+
+###Import and prepare data  
+Imports the clean document term matrix and adds metadata to it  
+Prepares the corpus for stm analysis
+```{r}
+
+load("data/avila_dtm") #import the clean dtm
+dtm <- readCorpus(dtm, "slam") #convert the dtm to an stm-type corpus
+meta <- read.csv(paste(wd, "/data/meta_data/metadata.csv", sep =''), sep = ";") #import the metadata
+stm_data <- prepDocuments(dtm$documents, dtm$vocab, meta = meta, lower.thresh = 1) #add the metadata and remove terms that appear in one document or less
+```
+
+###Structural Topic Model 
+We build the models for inspection
+```{r}
+
+modeltest <- stm(documents = corpus$documents, vocab = corpus$vocab,
+                 K = 0,
+                 max.em.its = 75,
+                 init.type = "Spectral")
+
+labelTopics(modeltest, c(3, 7, 20))
+
+```
+
