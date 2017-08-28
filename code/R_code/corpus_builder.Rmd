@@ -30,7 +30,7 @@ p_load(tm, #for textmining
        textreg, #for saving corpus to Rdata
        tidyverse) #for piping
 
-wd <- "~/your/filepath/here/Avila/" #NB change this working directory so it points to your local Avila folder!
+wd <- "~/your/filepath/here/avila/" #NB change this working directory so it points to your local avila folder!
 setwd(wd) 
 
 ```
@@ -38,13 +38,13 @@ setwd(wd)
 ###Import data  
 Imports all the datafiles from the data_plain folder into a "Volatile Corpus"  
 ```{r}
-files <- list.files(path="data/plain_data") #make a list of all the files
+files <- list.files(path = "data/plain_data") #make a list of all the files
 files <- mixedsort(files) #sort the list numerically
 
 #make a Source object to tell VCorpus which order to import the files in:
-us <- paste(wd, "data/plain_data/",sep='') %>%
+us <- paste(wd, "data/plain_data/", sep='') %>%
   paste(files, sep='') %>%
-  URISource(encoding = "UTF-8",mode = "text")
+  URISource(encoding = "UTF-8", mode = "text")
 
 books.cor  <- VCorpus(us, readerControl = list(language = "lat")) #import all texts in the plain data folder to a corpus
 
@@ -61,7 +61,7 @@ minor= minor works
 
 ```{r}
 
-meta <- read.csv(paste(wd,"/data/meta_data/metadata.csv", sep=''),sep = ";") #import the metadata
+meta <- read.csv(paste(wd, "/data/meta_data/metadata.csv", sep=''), sep = ";") #import the metadata
 
 filenames <- file_path_sans_ext(names(books.cor)) #extract the filenames without the ending
 
@@ -91,7 +91,7 @@ for (i in 1:length(books.cor)){
 Finally, we clean the corpus, by mapping a series of tm functions to all the texts
 ```{r}
 
-stop.words = as.character(read.table(paste(wd,"/data/stopword_us.txt",sep=''))[,1]) #import our own, more elaborate list of words to be removed from the text
+stop.words = as.character(read.table(paste(wd, "/data/stopword_us.txt", sep=''))[,1]) #import our own, more elaborate list of words to be removed from the text
 
 # clean corpus
 
@@ -130,13 +130,13 @@ inspect(dtm[1:9,1700:1716])
 freq <- colSums(as.matrix(dtm))
 length(freq)
 #order the list, according to frequency
-ord=order(freq,decreasing = TRUE)
+ord=order(freq, decreasing = TRUE)
 
 #find the most and least frequent words
 freq[head(ord)]
 freq[tail(ord)]
 #we can also look at all words that appear more than a specified number of times
-findFreqTerms(dtm,lowfreq = 100)
+findFreqTerms(dtm, lowfreq = 100)
 
 save(dtm, file = "data/avila_dtm")
 
