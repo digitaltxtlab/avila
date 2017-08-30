@@ -30,19 +30,37 @@ Prepares the corpus for stm analysis
 load("data/avila_dtm") #import the clean dtm
 dtm <- readCorpus(dtm, "slam") #convert the dtm to an stm-type corpus
 meta <- read.csv(paste(wd, "/data/meta_data/metadata.csv", sep =''), sep = ";") #import the metadata
-stm_data <- prepDocuments(dtm$documents, dtm$vocab, meta = meta, lower.thresh = 1) #add the metadata and remove terms that appear in one document or less
+meta <- subset(meta, meta$format!="footnote") #make a subset of metadata that does not include footnotes
+stm_data <- prepDocuments(dtm$documents, dtm$vocab, meta = meta, lower.thresh = 1) #add the metadata and remove terms that appear in only one document or less
 ```
 
 ###Structural Topic Model 
 We build the models for inspection
 ```{r}
 
-modeltest <- stm(documents = corpus$documents, vocab = corpus$vocab,
-                 K = 0,
-                 max.em.its = 75,
-                 init.type = "Spectral")
+#search throuh different numbers of topics to find the ideal number for the simple model
+searchK(stm_data$documents, stm_data$vocab, K = c(5,10,15,20,25,30,35,40), init.type = "Spectral")
 
-labelTopics(modeltest, c(3, 7, 20))
+#plain model (no metadata)
+model1 <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
+              K = 30,
+              max.em.its = 75,
+              init.type = "Spectral")
+
+labelTopics(model1, n=3)
+
+
+#build a model where we include metadata for the format (letter, book etc.)
+
+searchK(stm_data$documents, stm_data$vocab, K = c(5,10,15,20,25,30,35,40), prevalence =~ format, data= stm_data$meta, init.type = "Spectral")
+
+model2 <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
+              K = 20,
+              prevalence = ~format,
+              max.em.its = 75,
+              data = stm_data$meta,
+              init.type = "Spectral")
+
 
 ```
 
