@@ -39,28 +39,78 @@ We build the models for inspection
 ```{r}
 
 #search throuh different numbers of topics to find the ideal number for the simple model
-searchK(stm_data$documents, stm_data$vocab, K = c(5,10,15,20,25,30,35,40), init.type = "Spectral")
+#searchK(stm_data$documents, stm_data$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), init.type = "Spectral")
 
 #plain model (no metadata)
 model1 <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
-              K = 30,
+              K = 20,
               max.em.its = 75,
               init.type = "Spectral")
-
-labelTopics(model1, n=3)
 
 
 #build a model where we include metadata for the format (letter, book etc.)
 
-searchK(stm_data$documents, stm_data$vocab, K = c(5,10,15,20,25,30,35,40), prevalence =~ format, data= stm_data$meta, init.type = "Spectral")
+#searchK(stm_data$documents, stm_data$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), prevalence =~ format, data = stm_data$meta, init.type = "Spectral")
 
 model2 <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
-              K = 20,
+              K = 25,
               prevalence = ~format,
-              max.em.its = 75,
+              max.em.its = 500,
               data = stm_data$meta,
               init.type = "Spectral")
 
+
+#build a model where we include metadata for the year (doesn't run yet)
+
+model3 <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
+              K = 25,
+              prevalence = ~year, #what to do about missing metadata?
+              max.em.its = 500,
+              data = stm_data$meta,
+              init.type = "Spectral")
+
+
+```
+
+Exploring the models
+
+```{r}
+labelTopics(model1, c(3,7,20))
+labelTopics(model2, n=5)
+
+plot(model1, type = "summary") #plot the estimated topic porportions
+plot(model2, type = "summary") #plot the estimated topic porportions
+
+cloud(model2) #wordclound for all topics
+cloud(model2, topic = 2) #wordcloud for specific topic
+
+#estimate the effect of format on topic ?prevalance?
+stm_data$meta$format <- as.factor(stm_data$meta$format)
+prep <- estimateEffect(1:25 ~ format, model2, meta = stm_data$meta, uncertainty = "Global")
+
+#plot all levels of format for a specific topic
+plot(prep, 
+     "format", 
+     topics = 23, 
+     model = model2, 
+     printlegend = FALSE, 
+     #xlab = "Time",
+     xaxt = "n"
+     )
+
+#plot the difference between two topics
+plot(prep, 
+     covariate = "format", 
+     topics = c(5, 23, 25),
+     model = model2, 
+     method = "difference",
+     cov.value1 = "letter", 
+     cov.value2 = "book",
+     xlab = "Letters ... Books (not sure)???",
+     main = "Effect on topic porportions of Letter vs. Book",
+     xlim = c(-.3, .3))
+
+#we see that topic 5 is strongly associated with letters?, whereas topic 23 is more strongly associated with books? maybe
 
 ```
 
