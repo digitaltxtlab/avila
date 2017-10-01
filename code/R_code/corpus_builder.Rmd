@@ -46,7 +46,7 @@ us <- paste(wd, "data/plain_data/", sep='') %>%
   paste(files, sep='') %>%
   URISource(encoding = "UTF-8", mode = "text")
 
-books.cor  <- VCorpus(us, readerControl = list(language = "lat")) #import all texts in the plain data folder to a corpus
+books_cor  <- VCorpus(us, readerControl = list(language = "lat")) #import all texts in the plain data folder to a corpus
 
 ```
 
@@ -63,26 +63,26 @@ minor= minor works
 
 meta <- read.csv(paste(wd, "/data/meta_data/metadata.csv", sep=''), sep = ";") #import the metadata
 
-filenames <- file_path_sans_ext(names(books.cor)) #extract the filenames without the ending
+filenames <- file_path_sans_ext(names(books_cor)) #extract the filenames without the ending
 
 # add all the external metadata at document level
 
-for (i in 1:length(books.cor)){
-  books.cor[[i]]$meta$document_no <- as.character(meta$document_no[[i]])
-  books.cor[[i]]$meta$name <- as.character(meta$name[[i]])
-  books.cor[[i]]$meta$format <- as.character(meta$format[[i]])
-  books.cor[[i]]$meta$year <- as.character(meta$year[[i]])
-  books.cor[[i]]$meta$month <- as.character(meta$month[[i]])
-  books.cor[[i]]$meta$day <- as.character(meta$day[[i]])
-  books.cor[[i]]$meta$sender_city <- as.character(meta$sender_city[[i]])
-  books.cor[[i]]$meta$reciever <- as.character(meta$reciever[[i]])
-  books.cor[[i]]$meta$reciever_city <- as.character(meta$reciever_city[[i]])
-  books.cor[[i]]$meta$incomplete <- as.character(meta$incomplete[[i]])
-  books.cor[[i]]$meta$no_chapters <- as.character(meta$no_chapters[[i]])
-  books.cor[[i]]$meta$book <- as.character(meta$book[[i]])
-  books.cor[[i]]$meta$notes <- as.character(meta$notes[[i]])
-  books.cor[[i]]$meta$translator <- as.character(meta$translator[[i]])
-  books.cor[[i]]$meta$filename <- as.character(filenames[[i]])
+for (i in 1:length(books_cor)){
+  books_cor[[i]]$meta$document_no <- as.character(meta$document_no[[i]])
+  books_cor[[i]]$meta$name <- as.character(meta$name[[i]])
+  books_cor[[i]]$meta$format <- as.character(meta$format[[i]])
+  books_cor[[i]]$meta$year <- as.character(meta$year[[i]])
+  books_cor[[i]]$meta$month <- as.character(meta$month[[i]])
+  books_cor[[i]]$meta$day <- as.character(meta$day[[i]])
+  books_cor[[i]]$meta$sender_city <- as.character(meta$sender_city[[i]])
+  books_cor[[i]]$meta$reciever <- as.character(meta$reciever[[i]])
+  books_cor[[i]]$meta$reciever_city <- as.character(meta$reciever_city[[i]])
+  books_cor[[i]]$meta$incomplete <- as.character(meta$incomplete[[i]])
+  books_cor[[i]]$meta$no_chapters <- as.character(meta$no_chapters[[i]])
+  books_cor[[i]]$meta$book <- as.character(meta$book[[i]])
+  books_cor[[i]]$meta$notes <- as.character(meta$notes[[i]])
+  books_cor[[i]]$meta$translator <- as.character(meta$translator[[i]])
+  books_cor[[i]]$meta$filename <- as.character(filenames[[i]])
 }
 
 ```
@@ -91,24 +91,28 @@ for (i in 1:length(books.cor)){
 Finally, we clean the corpus, by mapping a series of tm functions to all the texts
 ```{r}
 
-stop.words = as.character(read.table(paste(wd, "/data/stopword_us.txt", sep=''))[,1]) #import our own, more elaborate list of words to be removed from the text
+stop_words = as.character(read.table(paste(wd, "/data/stopword_us.txt", sep=''))[,1]) #import our own, more elaborate list of words to be removed from the text
 
 # clean corpus
 
-clean_corpus <- function(corpus){
-  main <- tm_map(books.cor, content_transformer(tolower)) %>% #transforms all letters to lowercase
+clean_corpus_function <- function(corpus){
+  tm_map(corpus, content_transformer(tolower)) %>% #transforms all letters to lowercase
   tm_map(removePunctuation) %>% #removes punctuationmarks
   tm_map(removeNumbers) %>% #removes numbers
-  tm_map(removeWords, stop.words) %>% #removes all words in stopword_us.txt. Alternatively use: stopwords("english")
+  tm_map(removeWords, stop_words) %>% #removes all words in stopword_us.txt. Alternatively use: stopwords("english")
   tm_map(stemDocument) %>% #transforms all words to their word stem
   tm_map(stripWhitespace) %>% #removes excess whitespace
-  tm_filter(FUN = function(x) meta(x)[["format"]] != "footnote") %>% #remove all the footnotes from the corpus
-  return()
+  tm_filter(FUN = function(x) meta(x)[["format"]] !="footnote") %>% #remove all the footnotes from the corpus
+  return() 
 }
 
-clean.corpus <- clean_corpus(books.cor) #returns the clean corpus
+clean_corpus <- clean_corpus_function(books_cor) #returns the clean corpus
+#create corpus without missing years:
+remove_na_year <- !is.na(meta(clean_corpus, "year"))
+clean_corpus_year <- clean_corpus[remove_na_year]
 
-save.corpus.to.files(clean.corpus, filename = "data/clean_corpus") #saves the cleaned corpus to a .txt and .RData file
+
+save.corpus.to.files(clean_corpus, filename = "data/clean_corpus") #saves the cleaned corpus to a .txt and .RData file
 
 ```
 
@@ -118,10 +122,11 @@ Source: https://eight2late.wordpress.com/2015/05/27/a-gentle-introduction-to-tex
 ```{r}
 
 #inspects the text in the specified document
-writeLines(as.character(clean.corpus[[30]]))
+writeLines(as.character(clean_corpus[[30]]))
 
 #make a matrix with documents in rows and unique terms in columns
-dtm <- DocumentTermMatrix(clean.corpus)
+dtm <- DocumentTermMatrix(clean_corpus)
+dtm_year <- DocumentTermMatrix(clean_corpus_year)
 
 #inspect a specific part of the matrix
 inspect(dtm[1:9,1700:1716])
@@ -139,6 +144,7 @@ freq[tail(ord)]
 findFreqTerms(dtm, lowfreq = 100)
 
 save(dtm, file = "data/avila_dtm")
+save(dtm_year, file = "data/avila_dtm_year")
 
 ```
 

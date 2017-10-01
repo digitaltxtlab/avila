@@ -17,8 +17,8 @@ setwd(wd)
 
 library(pacman)
 p_load(stm, #for structural topic modelling
-       Rtsne, #for determining number og topics
-       geometry) #for determining number og topics
+       Rtsne, #for determining number of topics
+       geometry) #for determining number of topics
 
 ```
 
@@ -32,6 +32,7 @@ dtm <- readCorpus(dtm, "slam") #convert the dtm to an stm-type corpus
 meta <- read.csv(paste(wd, "/data/meta_data/metadata.csv", sep =''), sep = ";") #import the metadata
 meta <- subset(meta, meta$format!="footnote") #make a subset of metadata that does not include footnotes
 stm_data <- prepDocuments(dtm$documents, dtm$vocab, meta = meta, lower.thresh = 1) #add the metadata and remove terms that appear in only one document or less
+
 ```
 
 ###Structural Topic Model 
@@ -42,7 +43,7 @@ We build the models for inspection
 #searchK(stm_data$documents, stm_data$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), init.type = "Spectral")
 
 #plain model (no metadata)
-model1 <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
+model_plain <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
               K = 20,
               max.em.its = 75,
               init.type = "Spectral")
@@ -52,47 +53,58 @@ model1 <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
 
 #searchK(stm_data$documents, stm_data$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), prevalence =~ format, data = stm_data$meta, init.type = "Spectral")
 
-model2 <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
+model_format <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
               K = 25,
               prevalence = ~format,
               max.em.its = 500,
               data = stm_data$meta,
               init.type = "Spectral")
 
+```
 
-#build a model where we include metadata for the year (doesn't run yet)
+Create a model for year
+```{r}
 
-model3 <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
+#to create a model for year we need to load a second dtm where we have excluded all the documents with NAs in the "year" column. We use the same prep-procedure as before:
+load("data/avila_dtm_year")
+dtm_year <- readCorpus(dtm_year, "slam")
+meta_year <- read.csv(paste(wd, "/data/meta_data/metadata.csv", sep =''), sep = ";")
+meta_year <- subset(meta, !is.na(meta$year) & meta$format!="footnote") #make a subset of metadata that does not include footnotes and docs with NAs in year
+stm_data_year <- prepDocuments(dtm_year$documents, dtm_year$vocab, meta = meta_year, lower.thresh = 1)
+
+
+searchK(stm_data_year$documents, stm_data_year$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), prevalence =~ year, data = stm_data_year$meta_year, init.type = "Spectral")
+
+model_year <- stm(documents = stm_data_year$documents, vocab = stm_data_year$vocab,
               K = 25,
               prevalence = ~year, #what to do about missing metadata?
               max.em.its = 500,
-              data = stm_data$meta,
+              data = year_data$meta,
               init.type = "Spectral")
-
-
 ```
 
-Exploring the models
+#Model inspection  
+Exploring the models with plots
 
 ```{r}
-labelTopics(model1, c(3,7,20))
-labelTopics(model2, n=5)
+labelTopics(model_plain, c(3,7,20))
+labelTopics(model_format, n=5)
 
-plot(model1, type = "summary") #plot the estimated topic porportions
-plot(model2, type = "summary") #plot the estimated topic porportions
+plot(model_plain, type = "summary") #plot the estimated topic porportions
+plot(model_format, type = "summary") #plot the estimated topic porportions
 
-cloud(model2) #wordclound for all topics
-cloud(model2, topic = 2) #wordcloud for specific topic
+cloud(model_format) #wordclound for all topics
+cloud(model_format, topic = 23) #wordcloud for specific topic
 
 #estimate the effect of format on topic ?prevalance?
 stm_data$meta$format <- as.factor(stm_data$meta$format)
-prep <- estimateEffect(1:25 ~ format, model2, meta = stm_data$meta, uncertainty = "Global")
+prep <- estimateEffect(1:25 ~ format, model_format, meta = stm_data$meta, uncertainty = "Global")
 
 #plot all levels of format for a specific topic
 plot(prep, 
      "format", 
-     topics = 23, 
-     model = model2, 
+     topics = 5, 
+     model = model_format, 
      printlegend = FALSE, 
      #xlab = "Time",
      xaxt = "n"
@@ -102,15 +114,18 @@ plot(prep,
 plot(prep, 
      covariate = "format", 
      topics = c(5, 23, 25),
-     model = model2, 
+     model = model_format, 
      method = "difference",
      cov.value1 = "letter", 
      cov.value2 = "book",
-     xlab = "Letters ... Books (not sure)???",
-     main = "Effect on topic porportions of Letter vs. Book",
+     xlab = "Books ... Letters",
+     main = "Change in topic proportion from Letter to Book",
      xlim = c(-.3, .3))
 
-#we see that topic 5 is strongly associated with letters?, whereas topic 23 is more strongly associated with books? maybe
+#we see that topic 5 is strongly associated with letters, whereas topic 23 is more strongly associated with books
+
+mod.out.corr <- topicCorr(model_format)
+plot(mod.out.corr)
 
 ```
 
