@@ -18,7 +18,8 @@ setwd(wd)
 library(pacman)
 p_load(stm, #for structural topic modelling
        Rtsne, #for determining number of topics
-       geometry) #for determining number of topics
+       geometry, #for determining number of topics
+       dplyr) #for data transformation
 
 ```
 
@@ -35,12 +36,12 @@ stm_data <- prepDocuments(dtm$documents, dtm$vocab, meta = meta, lower.thresh = 
 
 ```
 
-###Structural Topic Model 
-We build the models for inspection
+###Structural Topic Modelling 
+We build the models for inspection  
+searchK() searches throuh different numbers of topics to find the ideal number for the models - see the output of these (lengthy) calculations in the internal > plots > stm folder
 ```{r}
 
-#search throuh different numbers of topics to find the ideal number for the simple model
-#searchK(stm_data$documents, stm_data$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), init.type = "Spectral")
+searchK(stm_data$documents, stm_data$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), init.type = "Spectral")
 
 #plain model (no metadata)
 model_plain <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
@@ -51,7 +52,7 @@ model_plain <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
 
 #build a model where we include metadata for the format (letter, book etc.)
 
-#searchK(stm_data$documents, stm_data$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), prevalence =~ format, data = stm_data$meta, init.type = "Spectral")
+searchK(stm_data$documents, stm_data$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), prevalence =~ format, data = stm_data$meta, init.type = "Spectral")
 
 model_format <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
               K = 25,
@@ -62,46 +63,84 @@ model_format <- stm(documents = stm_data$documents, vocab = stm_data$vocab,
 
 ```
 
-Create a model for year
-```{r}
+##Create models for year  
+To create models for year we need to load a second dtm where we have excluded all the documents with NAs in the "year" column. 
+We use the same prep-procedure as before, but create new metadata based on the old. E.g. two new columns are added; one that devides the texts into three stages of Teresas authorship and one that defines if the text was written before or after 1575. The reasoning for the division is as follows:  
+- In 1560 Terese went through her second conversion (the first was in 1554) and the Inquisition made an index of illigal books (some of which Teresa had read and loved). She was 45 years old.  
+- In 1575 a formal complaint about Teresas autobipgraphy, Life, was submitted to the Inquisition and her later work was written with this in mind. She was 60 years old.  
 
-#to create a model for year we need to load a second dtm where we have excluded all the documents with NAs in the "year" column. We use the same prep-procedure as before:
+```{r}
 load("data/avila_dtm_year")
 dtm_year <- readCorpus(dtm_year, "slam")
-meta_year <- read.csv(paste(wd, "/data/meta_data/metadata.csv", sep =''), sep = ";")
-meta_year <- subset(meta, !is.na(meta$year) & meta$format!="footnote") #make a subset of metadata that does not include footnotes and docs with NAs in year
+meta_year <- subset(meta, !is.na(meta$year)) #exclude docs with NAs in "year"
+#add columns that devide Teresas carrer into events
+meta_year <- mutate(meta_year, 
+                    teresa_ages = ifelse(year>1560, ifelse(year>1575, "old", "middle"),"young"),
+                    before_1575 = ifelse(year<1575, "before", "after"))
+
 stm_data_year <- prepDocuments(dtm_year$documents, dtm_year$vocab, meta = meta_year, lower.thresh = 1)
 
+#build a model where we include metadata for the year
 
-searchK(stm_data_year$documents, stm_data_year$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), prevalence =~ year, data = stm_data_year$meta_year, init.type = "Spectral")
+searchK(stm_data_year$documents, stm_data_year$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), prevalence =~ year, data = stm_data_year$meta, init.type = "Spectral")
 
 model_year <- stm(documents = stm_data_year$documents, vocab = stm_data_year$vocab,
               K = 25,
-              prevalence = ~year, #what to do about missing metadata?
+              prevalence = ~year,
               max.em.its = 500,
-              data = year_data$meta,
+              data = stm_data_year$meta,
+              init.type = "Spectral")
+
+#build a model where we include metadata for the 3 different ages of Teresas authorship (see above for more info on this division)
+
+searchK(stm_data_year$documents, stm_data_year$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), prevalence =~ teresa_ages, data = stm_data_year$meta, init.type = "Spectral")
+
+model_ages <- stm(documents = stm_data_year$documents, vocab = stm_data_year$vocab,
+              K = 20,
+              prevalence = ~teresa_ages,
+              max.em.its = 500,
+              data = stm_data_year$meta,
+              init.type = "Spectral")
+
+#build a model where we include metadata about weather the text was written before or after 1575 (see above for more info on this division)
+
+searchK(stm_data_year$documents, stm_data_year$vocab, K = c(5, 10, 15, 20, 25, 30, 35, 40), prevalence =~ before_1575, data = stm_data_year$meta, init.type = "Spectral")
+
+model_before <- stm(documents = stm_data_year$documents, vocab = stm_data_year$vocab,
+              K = 30,
+              prevalence = ~before_1575,
+              max.em.its = 500,
+              data = stm_data_year$meta,
               init.type = "Spectral")
 ```
 
-#Model inspection  
+##Model inspection  
 Exploring the models with plots
 
 ```{r}
-labelTopics(model_plain, c(3,7,20))
-labelTopics(model_format, n=5)
 
+#1. plain model:
+labelTopics(model_plain, c(3,7,20))
+labelTopics(model_plain, n=5)
 plot(model_plain, type = "summary") #plot the estimated topic porportions
+
+#2. format model:
+labelTopics(model_format, c(3,7,20))
+labelTopics(model_format, n=5)
 plot(model_format, type = "summary") #plot the estimated topic porportions
 
 cloud(model_format) #wordclound for all topics
 cloud(model_format, topic = 23) #wordcloud for specific topic
 
+mod.out.corr <- topicCorr(model_format)
+plot(mod.out.corr)
+
 #estimate the effect of format on topic ?prevalance?
 stm_data$meta$format <- as.factor(stm_data$meta$format)
-prep <- estimateEffect(1:25 ~ format, model_format, meta = stm_data$meta, uncertainty = "Global")
+prep_format <- estimateEffect(1:25 ~ format, model_format, meta = stm_data$meta, uncertainty = "Global")
 
 #plot all levels of format for a specific topic
-plot(prep, 
+plot(prep_format, 
      "format", 
      topics = 5, 
      model = model_format, 
@@ -110,8 +149,8 @@ plot(prep,
      xaxt = "n"
      )
 
-#plot the difference between two topics
-plot(prep, 
+#plot the difference between two topics in the format model
+plot(prep_format, 
      covariate = "format", 
      topics = c(5, 23, 25),
      model = model_format, 
@@ -124,8 +163,95 @@ plot(prep,
 
 #we see that topic 5 is strongly associated with letters, whereas topic 23 is more strongly associated with books
 
-mod.out.corr <- topicCorr(model_format)
-plot(mod.out.corr)
+
+#3. year model
+
+labelTopics(model_year, c(3,7,20))
+labelTopics(model_year, n=5)
+plot(model_year, type = "summary") #plot the estimated topic porportions
+
+cloud(model_year) #wordclound for all topics
+cloud(model_year, topic = 23) #wordcloud for specific topic
+
+
+#estimate the effect of year on topic ?prevalance?
+stm_data_year$meta$year <- as.factor(stm_data_year$meta$year)
+prep_year <- estimateEffect(1:25 ~ year, model_year, meta = stm_data_year$meta, uncertainty = "Global")
+
+#4. ages model
+
+labelTopics(model_ages, c(3,7,20))
+labelTopics(model_ages, n=5)
+plot(model_ages, type = "summary") #plot the estimated topic porportions
+
+cloud(model_ages) #wordclound for all topics
+cloud(model_ages, topic = 16) #wordcloud for specific topic
+
+
+#estimate the effect of ages on topic ?prevalance?
+stm_data_year$meta$teresa_ages <- as.factor(stm_data_year$meta$teresa_ages)
+prep_ages <- estimateEffect(1:20 ~ teresa_ages, model_year, meta = stm_data_year$meta, uncertainty = "Global")
+
+
+#plot all levels of ages for a specific topic
+plot(prep_ages, 
+     "teresa_ages", 
+     topics = 16, 
+     model = model_ages, 
+     printlegend = FALSE, 
+     #xlab = "Time",
+     xaxt = "n"
+     )
+
+#plot the difference between two topics in the format model
+plot(prep_ages, 
+     covariate = "teresa_ages", 
+     topics = c(16, 5),
+     model = model_ages, 
+     method = "difference",
+     cov.value1 = "middle", 
+     cov.value2 = "old",
+     xlab = "Old ... Middle",
+     main = "Change in topic proportion from Middle to old age",
+     xlim = c(-.3, .3))
+
+
+#5. before model
+
+labelTopics(model_before, c(3,7,20))
+labelTopics(model_before, n=5)
+plot(model_before, type = "summary") #plot the estimated topic porportions
+
+cloud(model_before) #wordclound for all topics
+cloud(model_before, topic = 16) #wordcloud for specific topic
+
+
+#estimate the effect of ages on topic ?prevalance?
+stm_data_year$meta$before_1575 <- as.factor(stm_data_year$meta$before_1575)
+prep_before <- estimateEffect(1:30 ~ before_1575, model_before, meta = stm_data_year$meta, uncertainty = "Global")
+
+
+#plot both levels of before_1575 for a specific topic
+plot(prep_before, 
+     "before_1575", 
+     topics = c(1,5,16), 
+     model = model_before, 
+     printlegend = FALSE, 
+     #xlab = "Time",
+     xaxt = "n"
+     )
+
+#plot the difference between before and after 1575
+plot(prep_before, 
+     covariate = "before_1575", 
+     topics = c(16,3),
+     model = model_before, 
+     method = "difference",
+     cov.value1 = "after", 
+     cov.value2 = "before",
+     xlab = "before ... after",
+     main = "Change in topic proportion from before and after 1575",
+     xlim = c(-.3, .3))
 
 ```
 
