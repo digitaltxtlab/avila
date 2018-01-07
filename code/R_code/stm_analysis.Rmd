@@ -119,23 +119,32 @@ Exploring the models with plots
 
 ```{r}
 
-#1. plain model:
+#1. PLAIN MODEL:
+
+#different plots to toy with:
+
+#labels of the different topics
 labelTopics(model_plain, c(3,7,20))
 labelTopics(model_plain, n=5)
-plot(model_plain, type = "summary") #plot the estimated topic porportions
 
-#2. format model:
-labelTopics(model_format, c(3,7,20))
-labelTopics(model_format, n=5)
-plot(model_format, type = "summary") #plot the estimated topic porportions
-
+#wordclouds:
 cloud(model_format) #wordclound for all topics
 cloud(model_format, topic = 23) #wordcloud for specific topic
 
+#network plots:
 mod.out.corr <- topicCorr(model_format)
 plot(mod.out.corr)
 
-#estimate the effect of format on topic ?prevalance?
+#plots of topic porportions
+topics_plain <- recordPlot(plot(model_plain, type = "summary")) #plot the estimated topic porportions
+save(topics_plain, file = "internal/plots/stm/topics_graph_plain.rda") #save the plot to an .rda file
+
+#2. FORMAT MODEL:
+
+topics_format <- recordPlot(plot(model_format, type = "summary")) #plot the estimated topic porportions
+save(topics_format, file = "internal/plots/stm/topics_graph_format.rda") #save the plot to an .rda file
+
+#estimate the effect of format on topic prevalance
 stm_data$meta$format <- as.factor(stm_data$meta$format)
 prep_format <- estimateEffect(1:25 ~ format, model_format, meta = stm_data$meta, uncertainty = "Global")
 
@@ -144,54 +153,43 @@ plot(prep_format,
      "format", 
      topics = 5, 
      model = model_format, 
-     printlegend = FALSE, 
+     printlegend = TRUE, 
      #xlab = "Time",
      xaxt = "n"
      )
 
 #plot the difference between two topics in the format model
-plot(prep_format, 
+difference_format <- recordPlot(plot(prep_format, 
      covariate = "format", 
-     topics = c(5, 23, 25),
+     topics = c(1:25),
      model = model_format, 
      method = "difference",
      cov.value1 = "letter", 
      cov.value2 = "book",
      xlab = "Books ... Letters",
      main = "Change in topic proportion from Letter to Book",
-     xlim = c(-.3, .3))
+     xlim = c(-.3, .3)))
+save(difference_format, file = "internal/plots/stm/difference_graph_format.rda") #save the plot to an .rda file
 
 #we see that topic 5 is strongly associated with letters, whereas topic 23 is more strongly associated with books
 
+plot(model_format,type = "perspectives", topics = c(5,23))
 
-#3. year model
+#3. YEAR MODEL:
 
-labelTopics(model_year, c(3,7,20))
-labelTopics(model_year, n=5)
 plot(model_year, type = "summary") #plot the estimated topic porportions
 
-cloud(model_year) #wordclound for all topics
-cloud(model_year, topic = 23) #wordcloud for specific topic
-
-
-#estimate the effect of year on topic ?prevalance?
+#estimate the effect of year on topic prevalance
 stm_data_year$meta$year <- as.factor(stm_data_year$meta$year)
 prep_year <- estimateEffect(1:25 ~ year, model_year, meta = stm_data_year$meta, uncertainty = "Global")
 
-#4. ages model
+#4. AGES MODEL:
 
-labelTopics(model_ages, c(3,7,20))
-labelTopics(model_ages, n=5)
 plot(model_ages, type = "summary") #plot the estimated topic porportions
 
-cloud(model_ages) #wordclound for all topics
-cloud(model_ages, topic = 16) #wordcloud for specific topic
-
-
-#estimate the effect of ages on topic ?prevalance?
+#estimate the effect of ages on topic prevalance
 stm_data_year$meta$teresa_ages <- as.factor(stm_data_year$meta$teresa_ages)
 prep_ages <- estimateEffect(1:20 ~ teresa_ages, model_year, meta = stm_data_year$meta, uncertainty = "Global")
-
 
 #plot all levels of ages for a specific topic
 plot(prep_ages, 
@@ -216,42 +214,37 @@ plot(prep_ages,
      xlim = c(-.3, .3))
 
 
-#5. before model
+#5. BEFORE/AFTER MODEL
 
-labelTopics(model_before, c(3,7,20))
-labelTopics(model_before, n=5)
-plot(model_before, type = "summary") #plot the estimated topic porportions
+topics_before <- recordPlot(plot(model_before, type = "summary")) #plot the estimated topic porportions
+save(topics_before, file = "internal/plots/stm/topics_graph_before.rda") #save the plot to an .rda file
 
-cloud(model_before) #wordclound for all topics
-cloud(model_before, topic = 16) #wordcloud for specific topic
-
-
-#estimate the effect of ages on topic ?prevalance?
+#estimate the effect of ages on topic prevalance
 stm_data_year$meta$before_1575 <- as.factor(stm_data_year$meta$before_1575)
 prep_before <- estimateEffect(1:30 ~ before_1575, model_before, meta = stm_data_year$meta, uncertainty = "Global")
-
 
 #plot both levels of before_1575 for a specific topic
 plot(prep_before, 
      "before_1575", 
-     topics = c(1,5,16), 
+     topics = 5, 
      model = model_before, 
-     printlegend = FALSE, 
+     printlegend = FALSE,
      #xlab = "Time",
      xaxt = "n"
      )
 
 #plot the difference between before and after 1575
-plot(prep_before, 
+difference_before <- recordPlot(plot(prep_before, 
      covariate = "before_1575", 
-     topics = c(16,3),
+     topics = c(1:30),
      model = model_before, 
      method = "difference",
      cov.value1 = "after", 
      cov.value2 = "before",
      xlab = "before ... after",
      main = "Change in topic proportion from before and after 1575",
-     xlim = c(-.3, .3))
+     xlim = c(-.3, .3)))
+save(difference_before, file = "internal/plots/stm/difference_graph_before.rda") #save the plot to an .rda file
 
 ```
 
